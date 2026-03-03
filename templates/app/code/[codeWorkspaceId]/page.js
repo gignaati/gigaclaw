@@ -1,5 +1,5 @@
-import { auth } from 'thepopebot/auth';
-import { CodePage } from 'thepopebot/code';
+import { auth } from 'gigabot/auth';
+import { CodePage } from 'gigabot/code';
 
 export default async function CodeRoute({ params }) {
   const session = await auth();

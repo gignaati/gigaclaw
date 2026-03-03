@@ -1,3 +1,3 @@
-import { withThepopebot } from 'thepopebot/config';
+import { withGigabot } from 'gigabot/config';
 
-export default withThepopebot({});
+export default withGigabot({});

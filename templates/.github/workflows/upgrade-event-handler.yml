@@ -17,9 +17,9 @@ jobs:
     runs-on: self-hosted
     timeout-minutes: 20
     steps:
-      - name: Upgrade thepopebot
+      - name: Upgrade gigabot
         run: |
-          docker exec thepopebot-event-handler bash -c '
+          docker exec gigabot-event-handler bash -c '
             export GH_TOKEN=$(grep "^GH_TOKEN=" /app/.env | cut -d= -f2-)
             echo "${GH_TOKEN}" | gh auth login --with-token
             gh auth setup-git
@@ -29,33 +29,33 @@ jobs:
             git clone --depth 1 "$REPO_URL" "$WORK_DIR"
             cd "$WORK_DIR"
 
-            git config user.name "thepopebot"
-            git config user.email "thepopebot@users.noreply.github.com"
+            git config user.name "gigabot"
+            git config user.email "gigabot@users.noreply.github.com"
 
             npm install --omit=dev
-            OLD_VERSION=$(node -p "require(\"./node_modules/thepopebot/package.json\").version")
+            OLD_VERSION=$(node -p "require(\"./node_modules/gigabot/package.json\").version")
 
             TARGET="${{ github.event.inputs.target_version }}"
             if [ -n "$TARGET" ] && echo "$TARGET" | grep -q "-"; then
               # Beta: npm update cannot upgrade an exact-pinned dependency, must use install
-              npm install "thepopebot@${TARGET}" --prefer-online
+              npm install "gigabot@${TARGET}" --prefer-online
             else
               # Stable: npm update resolves to latest within semver range
-              npm update thepopebot --prefer-online
+              npm update gigabot --prefer-online
             fi
 
-            NEW_VERSION=$(node -p "require(\"./node_modules/thepopebot/package.json\").version")
+            NEW_VERSION=$(node -p "require(\"./node_modules/gigabot/package.json\").version")
 
             if [ "$OLD_VERSION" != "$NEW_VERSION" ]; then
-              BRANCH="upgrade/thepopebot-${NEW_VERSION}-$(date +%s)"
+              BRANCH="upgrade/gigabot-${NEW_VERSION}-$(date +%s)"
               git add -A
               git checkout -b "$BRANCH"
-              git commit -m "chore: upgrade thepopebot to $NEW_VERSION"
+              git commit -m "chore: upgrade gigabot to $NEW_VERSION"
               git push origin "$BRANCH"
-              gh pr create --title "chore: upgrade thepopebot" --body "Automated upgrade via upgrade-event-handler workflow." --base main --head "$BRANCH"
+              gh pr create --title "chore: upgrade gigabot" --body "Automated upgrade via upgrade-event-handler workflow." --base main --head "$BRANCH"
               gh pr merge "$BRANCH" --squash --auto --delete-branch
             else
-              echo "No changes — thepopebot is already up to date."
+              echo "No changes — gigabot is already up to date."
             fi
 
             rm -rf "$WORK_DIR"

@@ -1,4 +1,4 @@
-# thepopebot Soul
+# gigabot Soul
 
 ## Identity
 

@@ -1,14 +1,14 @@
-# thepopebot — Package Source Reference
+# gigabot — Package Source Reference
 
-Technical reference for AI assistants modifying the thepopebot NPM package source code.
+Technical reference for AI assistants modifying the gigabot NPM package source code.
 
 **Architecture**: Event Handler (Next.js) creates `job/*` branches → GitHub Actions runs Docker agent (Pi) → task executed → PR created → auto-merge → notification. Agent jobs log to `logs/{JOB_ID}/`.
 
 ## Package vs. Templates — Where Code Goes
 
-All event handler logic, API routes, library code, and core functionality lives in the **npm package** (`api/`, `lib/`, `config/`, `bin/`). This is what users import when they `import ... from 'thepopebot/...'`.
+All event handler logic, API routes, library code, and core functionality lives in the **npm package** (`api/`, `lib/`, `config/`, `bin/`). This is what users import when they `import ... from 'gigabot/...'`.
 
-The `templates/` directory contains **only files that get scaffolded into user projects** via `npx thepopebot init`. Templates are for user-editable configuration and thin wiring — things users are expected to customize or override. Never add core logic to templates.
+The `templates/` directory contains **only files that get scaffolded into user projects** via `npx gigabot init`. Templates are for user-editable configuration and thin wiring — things users are expected to customize or override. Never add core logic to templates.
 
 **When adding or modifying event handler code, always put it in the package itself (e.g., `api/`, `lib/`), not in `templates/`.** Templates should only contain:
 - Configuration files users edit (`config/SOUL.md`, `config/CRONS.json`, etc.)
@@ -37,7 +37,7 @@ The `templates/` directory contains **only files that get scaffolded into user p
 │   └── utils/
 │       └── render-md.js        # Markdown {{include}} processor
 ├── config/
-│   ├── index.js                # withThepopebot() Next.js config wrapper
+│   ├── index.js                # withGigabot() Next.js config wrapper
 │   └── instrumentation.js      # Server startup hook (loads .env, starts crons)
 ├── bin/
 │   └── cli.js                  # CLI entry point
@@ -57,9 +57,9 @@ The `templates/` directory contains **only files that get scaffolded into user p
 | `lib/cron.js` | Cron scheduler — loads `config/CRONS.json` at server start |
 | `lib/triggers.js` | Trigger middleware — loads `config/TRIGGERS.json` |
 | `lib/utils/render-md.js` | Markdown include and variable processor (`{{filepath}}`, `{{datetime}}`, `{{skills}}`) |
-| `config/index.js` | `withThepopebot()` Next.js config wrapper |
+| `config/index.js` | `withGigabot()` Next.js config wrapper |
 | `config/instrumentation.js` | `register()` startup hook (loads .env, validates AUTH_SECRET, init DB, starts crons) |
-| `bin/cli.js` | CLI entry point (`thepopebot init`, `setup`, `reset`, `diff`, etc.) |
+| `bin/cli.js` | CLI entry point (`gigabot init`, `setup`, `reset`, `diff`, etc.) |
 | `lib/ai/index.js` | Chat, streaming, and job summary functions |
 | `lib/ai/agent.js` | LangGraph agent with SQLite checkpointing and tool use |
 | `lib/channels/base.js` | Channel adapter base class (normalize messages across platforms) |
@@ -70,16 +70,16 @@ The `templates/` directory contains **only files that get scaffolded into user p
 
 | Import | Module | Purpose |
 |--------|--------|---------|
-| `thepopebot/api` | `api/index.js` | `GET` and `POST` route handlers — re-exported by the user's catch-all route |
-| `thepopebot/config` | `config/index.js` | `withThepopebot()` — wraps the user's Next.js config to mark server-only packages as external |
-| `thepopebot/instrumentation` | `config/instrumentation.js` | `register()` — Next.js instrumentation hook that loads `.env` and starts cron jobs on server start |
-| `thepopebot/auth` | `lib/auth/index.js` | Auth helpers (`auth()`, `getPageAuthState()`) |
-| `thepopebot/auth/actions` | `lib/auth/actions.js` | Server action for admin setup (`setupAdmin()`) |
-| `thepopebot/chat` | `lib/chat/components/index.js` | Chat UI components |
-| `thepopebot/chat/actions` | `lib/chat/actions.js` | Server actions for chats, notifications, and swarm |
-| `thepopebot/chat/api` | `lib/chat/api.js` | Dedicated chat streaming route handler (session auth) |
-| `thepopebot/db` | `lib/db/index.js` | Database access |
-| `thepopebot/middleware` | `lib/auth/middleware.js` | Auth middleware |
+| `gigabot/api` | `api/index.js` | `GET` and `POST` route handlers — re-exported by the user's catch-all route |
+| `gigabot/config` | `config/index.js` | `withGigabot()` — wraps the user's Next.js config to mark server-only packages as external |
+| `gigabot/instrumentation` | `config/instrumentation.js` | `register()` — Next.js instrumentation hook that loads `.env` and starts cron jobs on server start |
+| `gigabot/auth` | `lib/auth/index.js` | Auth helpers (`auth()`, `getPageAuthState()`) |
+| `gigabot/auth/actions` | `lib/auth/actions.js` | Server action for admin setup (`setupAdmin()`) |
+| `gigabot/chat` | `lib/chat/components/index.js` | Chat UI components |
+| `gigabot/chat/actions` | `lib/chat/actions.js` | Server actions for chats, notifications, and swarm |
+| `gigabot/chat/api` | `lib/chat/api.js` | Dedicated chat streaming route handler (session auth) |
+| `gigabot/db` | `lib/db/index.js` | Database access |
+| `gigabot/middleware` | `lib/auth/middleware.js` | Auth middleware |
 
 ### Column Naming Convention
 
@@ -88,7 +88,7 @@ Example: `createdAt: integer('created_at')` — use `createdAt` in JS, SQL colum
 
 ## Database
 
-SQLite via Drizzle ORM at `data/thepopebot.sqlite` (override with `DATABASE_PATH`). Auto-initialized on server start.
+SQLite via Drizzle ORM at `data/gigabot.sqlite` (override with `DATABASE_PATH`). Auto-initialized on server start.
 
 | Table | Purpose |
 |-------|---------|

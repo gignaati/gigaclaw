@@ -1,5 +1,5 @@
-import { auth } from 'thepopebot/auth';
-import { ChatsPage } from 'thepopebot/chat';
+import { auth } from 'gigabot/auth';
+import { ChatsPage } from 'gigabot/chat';
 
 export default async function ChatsRoute() {
   const session = await auth();

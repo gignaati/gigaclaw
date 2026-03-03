@@ -1,15 +1,15 @@
 /**
- * Next.js config wrapper for thepopebot.
+ * Next.js config wrapper for gigabot.
  * Enables instrumentation hook for cron scheduling on server start.
  *
  * Usage in user's next.config.mjs:
- *   import { withThepopebot } from 'thepopebot/config';
- *   export default withThepopebot({});
+ *   import { withGigabot } from 'gigabot/config';
+ *   export default withGigabot({});
  *
  * @param {Object} nextConfig - User's Next.js config
  * @returns {Object} Enhanced Next.js config
  */
-export function withThepopebot(nextConfig = {}) {
+export function withGigabot(nextConfig = {}) {
   return {
     ...nextConfig,
     distDir: process.env.NEXT_BUILD_DIR || '.next',

@@ -8,10 +8,10 @@ fi
 
 PACKAGE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 TARGET_DIR="$(cd "$1" && pwd)"
-DEST="$TARGET_DIR/node_modules/thepopebot"
+DEST="$TARGET_DIR/node_modules/gigabot"
 
 if [ ! -d "$DEST" ]; then
-  echo "Error: thepopebot not found in $TARGET_DIR/node_modules/"
+  echo "Error: gigabot not found in $TARGET_DIR/node_modules/"
   exit 1
 fi
 
@@ -27,7 +27,7 @@ rsync -av "$PACKAGE_DIR/templates/" "$TARGET_DIR/" \
 cp "$PACKAGE_DIR/templates/.gitignore.template" "$TARGET_DIR/.gitignore"
 cp "$PACKAGE_DIR/templates/CLAUDE.md.template" "$TARGET_DIR/CLAUDE.md"
 
-# 2. Sync package runtime → node_modules/thepopebot
+# 2. Sync package runtime → node_modules/gigabot
 echo "Syncing package to node_modules..."
 rsync -av --delete "$PACKAGE_DIR/lib/" "$DEST/lib/"
 rsync -av --delete "$PACKAGE_DIR/api/" "$DEST/api/"
@@ -46,7 +46,7 @@ find "$DEST/lib" -name '*.jsx' -print0 | while IFS= read -r -d '' file; do
     --outdir="$outdir" --format=esm --jsx=automatic
 done
 
-# 4. Install any dependencies from thepopebot that aren't in the target yet
+# 4. Install any dependencies from gigabot that aren't in the target yet
 echo "Checking for missing dependencies..."
 MISSING=$(node -e "
 const fs = require('fs');

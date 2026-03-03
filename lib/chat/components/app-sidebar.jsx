@@ -241,7 +241,7 @@ export function AppSidebar({ user }) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <SidebarMenuButton
-                  href="https://www.skool.com/ai-architects"
+                  href="https://www.www.gignaati.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={collapsed ? 'justify-center' : ''}

@@ -1,10 +1,10 @@
 {
-  "name": "thepopebot",
-  "version": "1.2.73-beta.10",
+  "name": "gigabot",
+  "version": "1.0.0",
   "type": "module",
-  "description": "Create autonomous AI agents with a two-layer architecture: Next.js Event Handler + Docker Agent.",
+  "description": "Giga Bot — Gignaati's autonomous AI agent platform. Build, deploy, and run AI agents 24/7 with a two-layer architecture: Next.js Event Handler + Docker Agent. India-first, edge-native AI.",
   "bin": {
-    "thepopebot": "./bin/cli.js"
+    "gigabot": "./bin/cli.js"
   },
   "main": "api/index.js",
   "exports": {
@@ -45,13 +45,24 @@
     "ai",
     "agent",
     "autonomous",
+    "gignaati",
+    "gigabot",
     "telegram",
     "bot",
-    "claude",
+    "india",
+    "edge-ai",
     "nextjs"
   ],
-  "author": "Stephen Pope",
+  "author": "Gignaati <support@gignaati.com>",
   "license": "MIT",
+  "homepage": "https://www.gignaati.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gignaati/gigabot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gignaati/gigabot/issues"
+  },
   "dependencies": {
     "@ai-sdk/react": "^2.0.0",
     "@clack/prompts": "^0.10.0",

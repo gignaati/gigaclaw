@@ -1,22 +1,22 @@
 # CI/CD — workflow injection = secret exfiltration
-.github/                    @stephengpope
+.github/                    @gignaati
 
 # Package config — supply chain attack vector
-package.json                @stephengpope
-package-lock.json           @stephengpope
+package.json                @gignaati
+package-lock.json           @gignaati
 
 # CLI — runs on user machines via npx
-bin/                        @stephengpope
+bin/                        @gignaati
 
 # Auth — credential handling
-lib/auth/                   @stephengpope
+lib/auth/                   @gignaati
 
 # Database schema — breaking changes for all users
-lib/db/schema.js            @stephengpope
-drizzle/                    @stephengpope
+lib/db/schema.js            @gignaati
+drizzle/                    @gignaati
 
 # API route handler
-api/                        @stephengpope
+api/                        @gignaati
 
 # NPM package config wrapper
-config/                     @stephengpope
+config/                     @gignaati

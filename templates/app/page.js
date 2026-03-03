@@ -1,5 +1,5 @@
-import { auth } from 'thepopebot/auth';
-import { ChatPage } from 'thepopebot/chat';
+import { auth } from 'gigabot/auth';
+import { ChatPage } from 'gigabot/chat';
 
 export default async function Home() {
   const session = await auth();
