@@ -12,6 +12,13 @@ const __dirname = path.dirname(__filename);
 const command = process.argv[2];
 const args = process.argv.slice(3);
 
+// Handle --version / -v flag
+if (command === '--version' || command === '-v') {
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
+  console.log(`gigabot v${pkg.version}`);
+  process.exit(0);
+}
+
 // Files tightly coupled to the package version that are auto-updated by init.
 // These live in the user's project because GitHub/Docker require them at specific paths,
 // but they shouldn't drift from the package version.
@@ -72,6 +79,9 @@ Commands:
   set-agent-secret <KEY> [VALUE]    Set a GitHub secret with AGENT_ prefix (also updates .env)
   set-agent-llm-secret <KEY> [VALUE]  Set a GitHub secret with AGENT_LLM_ prefix
   set-var <KEY> [VALUE]             Set a GitHub repository variable
+  --version, -v                     Show gigabot version
+
+Powered by Gignaati — https://www.gignaati.com
 `);
 }
 

@@ -1,8 +1,9 @@
-# My Agent
+# My Giga Bot Agent
+> Powered by **[Giga Bot](https://github.com/gignaati/gigabot)** — India's Autonomous AI Agent Platform by [Gignaati](https://www.gignaati.com)
 
 ## Overview
 
-This is an autonomous AI agent powered by [gigabot](https://github.com/gignaati/gigabot). It uses a **two-layer architecture**:
+This is an autonomous AI agent powered by [Giga Bot](https://github.com/gignaati/gigabot). It uses a **two-layer architecture**:
 
 1. **Event Handler** — A Next.js server that orchestrates everything: web UI, Telegram chat, cron scheduling, webhook triggers, and job creation.
 2. **Docker Agent** — A container that runs the Pi coding agent for autonomous task execution. Each job gets its own branch, container, and PR.
