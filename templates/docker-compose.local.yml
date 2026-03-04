@@ -1,0 +1,56 @@
+# GigaBot — Local Mode
+# Runs GigaBot 100% offline using Ollama for LLM inference.
+# No GitHub, no ngrok, no Telegram required.
+#
+# Prerequisites:
+#   1. Install Ollama: https://ollama.com/download
+#   2. Pull a model:   ollama pull llama3.1:8b
+#   3. Start Ollama:   ollama serve
+#   4. Run GigaBot:    docker compose -f docker-compose.local.yml up -d
+#
+# Access the web interface at: http://localhost:3000
+
+services:
+  gigabot:
+    container_name: gigabot-local
+    image: ${EVENT_HANDLER_IMAGE_URL:-gignaati/gigabot:event-handler-${GIGABOT_VERSION:-latest}}
+    ports:
+      - "3000:80"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - gigabot-data:/data
+    environment:
+      # Ollama runs on the host machine — Docker reaches it via host.docker.internal
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+    env_file:
+      - .env
+    extra_hosts:
+      # Ensures host.docker.internal resolves on Linux (already works on macOS/Windows)
+      - "host.docker.internal:host-gateway"
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # Optional: self-hosted push notifications over LAN (no internet required)
+  # Enable with: docker compose -f docker-compose.local.yml --profile notifications up -d
+  ntfy:
+    image: binwiederhier/ntfy
+    container_name: gigabot-ntfy
+    ports:
+      - "8080:80"
+    command: serve --base-url http://localhost:8080
+    volumes:
+      - ntfy-data:/var/cache/ntfy
+    profiles:
+      - notifications
+    restart: unless-stopped
+
+volumes:
+  gigabot-data:
+  ntfy-data:

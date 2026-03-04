@@ -1,5 +1,44 @@
 # Changelog
 
+## 1.2.0
+
+**Released: March 2026**
+
+### New Feature: Local Mode — 100% Offline Setup
+
+`npm run setup` now opens with a **mode selector** before any other prompts. Users choose between:
+
+- **Cloud Mode** — the existing GitHub + ngrok + Telegram flow (unchanged)
+- **Local Mode** — 100% offline operation using Ollama for LLM inference; no GitHub, no ngrok, no Telegram required
+
+#### What was added
+
+**`setup/setup.mjs` (dispatcher)** — now a thin ~50-line file that prints the GigaBot banner and routes to `setup-cloud.mjs` or `setup-local.mjs` based on the user's choice.
+
+**`setup/setup-cloud.mjs`** — the original wizard, renamed and exported as `run()`. Zero functional changes to the cloud flow.
+
+**`setup/setup-local.mjs`** — new local-mode wizard with:
+- Caution banner listing what is unavailable (Telegram, GitHub runners, ngrok) and what works (web chat, cron jobs, Ollama inference, file uploads, Ntfy notifications)
+- Ollama health check (`localhost:11434`) with retry loop and platform-specific install instructions
+- RAM detection via `os.totalmem()` with automatic model recommendation by hardware tier:
+  - 8 GB or less → `llama3.2:3b`
+  - 16 GB → `llama3.1:8b`
+  - 32 GB → `llama3.1:70b-q4_0` (quantised)
+  - 64 GB+ → `llama3.1:70b` (full precision)
+- Interactive model selector showing already-pulled Ollama models; custom model name entry as fallback
+- Auth secret generation and `.env` writing with `GIGABOT_MODE=local`, `LLM_PROVIDER=ollama`, `LLM_MODEL`, `OLLAMA_BASE_URL`, `NEXTAUTH_URL`
+- Docker Compose startup using `docker-compose.local.yml` if present, falling back to `docker-compose.yml`
+
+**`templates/docker-compose.local.yml`** — new compose template for local mode:
+- GigaBot on port 3000, Ollama reachable via `host.docker.internal:11434`
+- `extra_hosts: host.docker.internal:host-gateway` for Linux compatibility
+- Optional Ntfy push notification service behind `--profile notifications`
+- Added to `MANAGED_PATHS` — kept in sync on `npx gigabot upgrade`
+
+**Mode-aware `gigabot init`** — re-running `npx gigabot init` on a local-mode project (detected via `GIGABOT_MODE=local` in `.env`) skips scaffolding of GitHub Actions workflow files, keeping the project clean.
+
+---
+
 ## 1.1.5
 
 **Released: March 2026**

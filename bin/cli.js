@@ -26,6 +26,7 @@ const MANAGED_PATHS = [
   '.github/workflows/',
   'docker/event-handler/',
   'docker-compose.yml',
+  'docker-compose.local.yml',
   '.dockerignore',
   'CLAUDE.md',
   // middleware.js must always be kept in sync with the package template because
@@ -33,6 +34,12 @@ const MANAGED_PATHS = [
   // object defined directly in this file — it cannot be re-exported from a
   // module.  Keeping it managed ensures users always get the correct pattern.
   'middleware.js',
+];
+
+// Files that are only relevant in cloud mode (GitHub + ngrok + Telegram).
+// In local mode these are skipped during scaffolding to keep the project clean.
+const CLOUD_ONLY_PATHS = [
+  '.github/workflows/',
 ];
 
 function isManaged(relPath) {
@@ -159,10 +166,24 @@ async function init() {
   const changed = [];
   const updated = [];
 
+  // Detect mode from existing .env (if any) so re-running init respects the chosen mode
+  const existingEnvPath = path.join(cwd, '.env');
+  let gigabotMode = 'cloud';
+  if (fs.existsSync(existingEnvPath)) {
+    const envContent = fs.readFileSync(existingEnvPath, 'utf-8');
+    const modeMatch = envContent.match(/^GIGABOT_MODE=(.*)$/m);
+    if (modeMatch && modeMatch[1].trim() === 'local') gigabotMode = 'local';
+  }
+
   for (const relPath of templateFiles) {
     const src = path.join(templatesDir, relPath);
     const outPath = destPath(relPath);
     const dest = path.join(cwd, outPath);
+
+    // In local mode, skip cloud-only files (GitHub Actions workflows etc.)
+    if (gigabotMode === 'local' && CLOUD_ONLY_PATHS.some(p => outPath === p || outPath.startsWith(p))) {
+      continue;
+    }
 
     if (!fs.existsSync(dest)) {
       // File doesn't exist — create it
