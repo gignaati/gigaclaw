@@ -1,5 +1,18 @@
 name: Publish to npm
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Triggered on every version tag push (e.g. v1.1.4, v1.2.0-beta.1).
+#
+# Pipeline:
+#   1. publish-staging   — publish to npm under a temporary "staging" dist-tag
+#   2. build-containers  — build & push 4 Docker images in parallel
+#   3. promote           — promote staging → real channel (latest / beta / rc)
+#   4. release-notes     — generate structured release notes via Node.js script
+#   5. github-release    — create GitHub Release with the generated notes
+#   6. update-changelog  — commit updated CHANGELOG.md back to main
+#   7. cleanup-on-failure — unpublish & remove staging tag if Docker builds fail
+# ─────────────────────────────────────────────────────────────────────────────
+
 on:
   push:
     tags:
@@ -10,7 +23,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # ─── Job 1: Publish to npm under a temporary "staging" tag ───
+
+  # ─── Job 1: Publish to npm under a temporary "staging" tag ───────────────
   publish-staging:
     runs-on: ubuntu-latest
     permissions:
@@ -39,18 +53,17 @@ jobs:
             pre ? pre.replace(/[^a-zA-Z].*/g, '') || 'pre' : 'latest'
           ")
           IS_PRE=$(echo "$VERSION" | grep -q '-' && echo "true" || echo "false")
-
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "channel=$CHANNEL" >> $GITHUB_OUTPUT
+          echo "version=$VERSION"       >> $GITHUB_OUTPUT
+          echo "channel=$CHANNEL"      >> $GITHUB_OUTPUT
           echo "is-prerelease=$IS_PRE" >> $GITHUB_OUTPUT
-          echo "Publishing $VERSION → staging (final tag: $CHANNEL, prerelease: $IS_PRE)"
+          echo "Publishing $VERSION to staging (final tag: $CHANNEL, prerelease: $IS_PRE)"
 
       - name: Publish to staging tag
         run: npm publish --tag staging
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  # ─── Job 2: Build & push Docker images (4 parallel) ───
+  # ─── Job 2: Build & push Docker images (4 parallel) ──────────────────────
   build-containers:
     needs: [publish-staging]
     runs-on: ubuntu-latest
@@ -74,16 +87,12 @@ jobs:
             dockerfile: templates/docker/event-handler/Dockerfile
     steps:
       - uses: actions/checkout@v4
-
       - uses: docker/setup-qemu-action@v3
-
       - uses: docker/setup-buildx-action@v3
-
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
-
       - name: Build and push ${{ matrix.image }}
         uses: docker/build-push-action@v6
         with:
@@ -95,7 +104,7 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
 
-  # ─── Job 3: Promote npm staging → real channel tag ───
+  # ─── Job 3: Promote npm staging → real channel tag ───────────────────────
   promote:
     needs: [publish-staging, build-containers]
     runs-on: ubuntu-latest
@@ -106,113 +115,158 @@ jobs:
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
-
       - name: Promote staging to ${{ needs.publish-staging.outputs.channel }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION="${{ needs.publish-staging.outputs.version }}"
           CHANNEL="${{ needs.publish-staging.outputs.channel }}"
-          echo "Promoting gigabot@$VERSION → $CHANNEL"
+          echo "Promoting gigabot@$VERSION to $CHANNEL"
           npm dist-tag add "gigabot@$VERSION" "$CHANNEL"
           npm dist-tag rm gigabot staging
 
-  # ─── Job 4: Create GitHub Release with LLM changelog ───
-  release:
+  # ─── Job 4: Generate structured release notes ────────────────────────────
+  #
+  # All logic lives in scripts/generate-release-notes.mjs to keep this YAML
+  # clean and the generation logic locally testable.
+  #
+  # Environment variables forwarded to the script:
+  #   TO_TAG              — current version tag (e.g. v1.1.4)
+  #   OUTPUT_FILE         — path where the script writes release_notes.md
+  #   ANTHROPIC_API_KEY   — optional; enables LLM narrative summary
+  #   ANTHROPIC_BASE_URL  — Anthropic API base (defaults to api.anthropic.com)
+  #   MODEL               — Anthropic model ID
+  release-notes:
     needs: [publish-staging, promote]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Generate release notes
+        env:
+          TO_TAG: v${{ needs.publish-staging.outputs.version }}
+          OUTPUT_FILE: /tmp/release_notes.md
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_BASE_URL: ${{ vars.ANTHROPIC_BASE_URL }}
+          MODEL: ${{ vars.ANTHROPIC_SMALL_FAST_MODEL || vars.ANTHROPIC_MODEL }}
+        run: node scripts/generate-release-notes.mjs
+
+      - name: Upload release notes artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes-${{ needs.publish-staging.outputs.version }}
+          path: /tmp/release_notes.md
+          retention-days: 7
+
+  # ─── Job 5: Create GitHub Release ────────────────────────────────────────
+  github-release:
+    needs: [publish-staging, promote, release-notes]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Generate changelog with LLM
-        env:
-          GH_TOKEN: ${{ github.token }}
-          API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          BASE_URL: ${{ vars.ANTHROPIC_BASE_URL }}
-          MODEL: ${{ vars.ANTHROPIC_SMALL_FAST_MODEL || vars.ANTHROPIC_MODEL }}
-        run: |
-          CURRENT_TAG=${GITHUB_REF#refs/tags/}
-
-          # For stable releases, compare against previous stable (not beta).
-          # For beta releases, compare against the most recent previous release of any kind.
-          if echo "$CURRENT_TAG" | grep -q '-'; then
-            PREV_TAG=$(gh release list --limit 100 --json tagName \
-              --jq '[.[].tagName | select(. != "'"${CURRENT_TAG}"'")] | first // empty')
-          else
-            PREV_TAG=$(gh release list --limit 100 --json tagName \
-              --jq '[.[].tagName | select(. != "'"${CURRENT_TAG}"'" and (contains("-") | not))] | first // empty')
-          fi
-
-          if [ -z "$PREV_TAG" ]; then
-            echo "Initial release" > /tmp/release_notes.md
-            exit 0
-          fi
-
-          # Get diff via GitHub API (no local history needed, works with shallow clone)
-          gh api "repos/${{ github.repository }}/compare/${PREV_TAG}...${CURRENT_TAG}" \
-            --jq '[.files[] | "--- a/\(.filename)\n+++ b/\(.filename)\n\(.patch // "")"] | join("\n\n")' \
-            > /tmp/diff.txt 2>/dev/null
-
-          if [ ! -s /tmp/diff.txt ]; then
-            echo "Bug fixes and improvements." > /tmp/release_notes.md
-            exit 0
-          fi
-
-          # Build prompt
-          PROMPT_HEADER="Analyze the following code diff between two releases of an npm package (gigabot — a framework for creating autonomous AI agents). Write a changelog that:
-
-          1. Describes each meaningful change in terms of **user-facing outcomes** — how the project is actually better
-          2. Includes brief technical context for each change
-          3. Uses bullet points, grouped by theme if there are many changes
-          4. Is concise and scannable
-          5. Ignores trivial changes (whitespace, formatting, version bumps)
-
-          Diff:"
-
-          # Use jq --rawfile to safely embed diff in JSON (handles all special chars)
-          jq -n \
-            --arg header "$PROMPT_HEADER" \
-            --rawfile diff /tmp/diff.txt \
-            --arg model "$MODEL" \
-            '{
-              model: $model,
-              max_tokens: 2048,
-              messages: [{role: "user", content: ($header + "\n" + $diff)}]
-            }' > /tmp/request.json
-
-          RESPONSE=$(curl -s "${BASE_URL}/v1/messages" \
-            -H "x-api-key: $API_KEY" \
-            -H "anthropic-version: 2023-06-01" \
-            -H "content-type: application/json" \
-            -d @/tmp/request.json)
-
-          NOTES=$(echo "$RESPONSE" | jq -r '.content[0].text // empty')
-
-          if [ -z "$NOTES" ]; then
-            # Fallback: use commit subjects via GitHub compare API
-            gh api "repos/${{ github.repository }}/compare/${PREV_TAG}...${CURRENT_TAG}" \
-              --jq '[.commits[].commit.message | split("\n")[0] | select(test("^[0-9]+\\.[0-9]+") | not)] | map("- " + .) | join("\n")' \
-              > /tmp/release_notes.md 2>/dev/null
-            # If that also fails, use a generic message
-            [ -s /tmp/release_notes.md ] || echo "Bug fixes and improvements." > /tmp/release_notes.md
-          else
-            echo "$NOTES" > /tmp/release_notes.md
-          fi
+      - name: Download release notes
+        uses: actions/download-artifact@v4
+        with:
+          name: release-notes-${{ needs.publish-staging.outputs.version }}
+          path: /tmp
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG=${GITHUB_REF#refs/tags/}
+          TAG="v${{ needs.publish-staging.outputs.version }}"
           PRERELEASE_FLAG=""
           if [ "${{ needs.publish-staging.outputs.is-prerelease }}" = "true" ]; then
             PRERELEASE_FLAG="--prerelease"
           fi
-          gh release create "$TAG" $PRERELEASE_FLAG --title "$TAG" --notes-file /tmp/release_notes.md
+          gh release create "$TAG" \
+            $PRERELEASE_FLAG \
+            --repo "${{ github.repository }}" \
+            --title "Giga Bot $TAG" \
+            --notes-file /tmp/release_notes.md
+          echo "GitHub Release: https://github.com/${{ github.repository }}/releases/tag/$TAG"
 
-  # ─── Job 5: Clean up if Docker builds fail ───
+  # ─── Job 6: Update CHANGELOG.md and commit back to main ──────────────────
+  #
+  # Prepends the generated release notes to CHANGELOG.md.
+  # Stable releases commit directly to main; pre-releases open a PR.
+  update-changelog:
+    needs: [publish-staging, promote, release-notes, github-release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download release notes
+        uses: actions/download-artifact@v4
+        with:
+          name: release-notes-${{ needs.publish-staging.outputs.version }}
+          path: /tmp
+
+      - name: Prepend release notes to CHANGELOG.md
+        env:
+          VERSION: ${{ needs.publish-staging.outputs.version }}
+        run: |
+          RELEASE_DATE=$(date -u +"%Y-%m-%d")
+          {
+            echo "# Changelog"
+            echo ""
+            echo "## v${VERSION} — ${RELEASE_DATE}"
+            echo ""
+            tail -n +2 /tmp/release_notes.md
+            echo ""
+            echo "---"
+            echo ""
+            tail -n +2 CHANGELOG.md
+          } > /tmp/CHANGELOG_new.md
+          mv /tmp/CHANGELOG_new.md CHANGELOG.md
+          echo "CHANGELOG.md updated for v${VERSION}"
+
+      - name: Commit changelog update
+        env:
+          VERSION: ${{ needs.publish-staging.outputs.version }}
+          IS_PRE: ${{ needs.publish-staging.outputs.is-prerelease }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name  "gigabot-release-bot"
+          git config user.email "gigabot@users.noreply.github.com"
+          git add CHANGELOG.md
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+
+          if [ "$IS_PRE" = "true" ]; then
+            BRANCH="changelog/v${VERSION}"
+            git checkout -b "$BRANCH"
+            git commit -m "docs: update CHANGELOG.md for v${VERSION} [skip ci]"
+            git push origin "$BRANCH"
+            gh pr create \
+              --title "docs: update CHANGELOG.md for v${VERSION}" \
+              --body "Automated CHANGELOG update from the release workflow." \
+              --base main \
+              --head "$BRANCH" \
+              --label "documentation" || true
+            echo "PR opened for changelog/v${VERSION}"
+          else
+            git commit -m "docs: update CHANGELOG.md for v${VERSION} [skip ci]"
+            git push origin main
+            echo "CHANGELOG.md committed to main"
+          fi
+
+  # ─── Job 7: Clean up if Docker builds fail ───────────────────────────────
   cleanup-on-failure:
     needs: [publish-staging, build-containers]
     if: always() && needs.publish-staging.result == 'success' && needs.build-containers.result != 'success'
@@ -224,16 +278,11 @@ jobs:
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
-
       - name: Remove staging tag and unpublish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION="${{ needs.publish-staging.outputs.version }}"
           echo "Docker builds failed — cleaning up gigabot@$VERSION"
-
-          # Remove the staging dist-tag so it doesn't linger
           npm dist-tag rm gigabot staging || true
-
-          # Unpublish the version (allowed within 72h of publish)
           npm unpublish "gigabot@$VERSION" || true
