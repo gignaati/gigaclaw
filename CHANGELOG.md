@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.2.2 — 2026-03-04
+
+### Branding: Remove all ThePopeBot / @stephengpope references
+
+All mentions of the original upstream project (ThePopeBot) and its contributor (@stephengpope) have been removed from every public-facing file in the repository. GigaBot is an independent product built and maintained by Gignaati — the historical inheritance language no longer appears anywhere in the codebase, documentation, or release notes.
+
+#### Files cleaned
+
+- `CHANGELOG.md` — v1.1.5 section reworded; all ThePopeBot references removed
+- `scripts/notes_v1.1.1.md` — API route rename described without referencing the old name
+- `scripts/notes_v1.1.2.md` — branding cleanup described as GigaBot completion, not legacy replacement
+- `scripts/notes_v1.1.5.md` — banner update described as GigaBot identity, old banner ASCII art removed
+
+---
+
 ## 1.2.1 — 2026-03-04
 
 ### Fixed — Onboarding friction (3 bugs from user report)
@@ -62,9 +77,9 @@
 
 **Released: March 2026**
 
-### Fix: Replace ThePopeBot ASCII banner with GigaBot branding
+### Fix: GigaBot ASCII banner in setup wizard
 
-The `npm run setup` and `npm run setup:telegram` commands previously displayed a `ThePopeBot` ASCII art banner — a leftover from the pre-Gignaati era. Both setup wizards now open with a clean **GigaBot** slant-font banner and the tagline `India's Autonomous AI Agent · Powered by Gignaati`.
+The `npm run setup` and `npm run setup:telegram` commands now open with the correct **GigaBot** slant-font banner and the tagline `India's Autonomous AI Agent · Powered by Gignaati`.
 
 This change affects `setup/setup.mjs` and `setup/setup-telegram.mjs`. No functional behaviour is changed — only the visual header shown at wizard startup.
 
