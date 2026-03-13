@@ -215,9 +215,10 @@ async function init() {
   if (!fs.existsSync(pkgPath)) {
     const dirName = path.basename(cwd);
     const { version } = JSON.parse(fs.readFileSync(path.join(packageDir, 'package.json'), 'utf8'));
-    // Use the exact current version as the minimum — not ^1.0.0 which would
-    // resolve to the oldest published version and miss all recent bug fixes.
-    const gigabotDep = version.includes('-') ? version : `^${version}`;
+    // Install from GitHub to always get the latest code. This bypasses the npm
+    // registry which may be stale if NPM_TOKEN is not configured (see issue #5).
+    // Once npm publishing is restored, this can revert to: `^${version}`
+    const gigabotDep = 'github:gignaati/gigabot';
     const pkg = {
       name: dirName,
       private: true,

@@ -102,9 +102,10 @@ mkdir -p "$PROJECT_DIR"
 
 # ─── Scaffold the project ────────────────────────────────────────────────────
 # --yes suppresses the "Ok to proceed? (y)" npm prompt that hangs curl|bash.
+# Install from GitHub to always get the latest code (bypasses stale npm registry).
 echo ""
 echo -e "${BOLD}Scaffolding Giga Bot project...${RESET}"
-(cd "$PROJECT_DIR" && npx --yes gigabot@latest init)
+(cd "$PROJECT_DIR" && npx --yes github:gignaati/gigabot init)
 
 echo ""
 echo -e "${GREEN}${BOLD}✅ Giga Bot scaffolded successfully!${RESET}"

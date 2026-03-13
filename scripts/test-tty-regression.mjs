@@ -277,7 +277,7 @@ test('install.ps1 auto-launches npm run setup after scaffolding', () => {
 test('install.sh uses npx --yes to suppress "Ok to proceed?" prompt', () => {
   const installSh = fs.readFileSync(path.join(ROOT, 'install.sh'), 'utf8');
   assert(
-    installSh.includes('npx --yes gigabot@latest') || installSh.includes('npx -y gigabot@latest'),
+    installSh.includes('npx --yes'),
     'install.sh is missing --yes on npx call — the "Ok to proceed? (y)" prompt will hang curl|bash installs'
   );
 });
@@ -303,7 +303,7 @@ test('install.sh runs npm install before npm run setup', () => {
   );
 });
 
-// ─── Test 20: bin/cli.js uses current version for gigabotDep (not ^1.0.0) ────
+// ─── Test 20: bin/cli.js uses GitHub dep or current version (not ^1.0.0) ─────
 test('bin/cli.js scaffolds package.json with current version, not hardcoded ^1.0.0', () => {
   const cliJs = fs.readFileSync(path.join(ROOT, 'bin', 'cli.js'), 'utf8');
   assert(

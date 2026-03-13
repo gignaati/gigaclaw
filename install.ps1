@@ -172,11 +172,11 @@ Write-Host ""
 
 Push-Location $AbsProjectDir
 try {
-    # --% passes --yes literally to npx, suppressing the "Ok to proceed? (y)" prompt
-    # that would hang non-interactive / piped invocations.
-    & npx --yes gigabot@latest init
+    # --yes suppresses the "Ok to proceed? (y)" prompt that would hang piped invocations.
+    # Install from GitHub to always get the latest code (bypasses stale npm registry).
+    & npx --yes github:gignaati/gigabot init
     if ($LASTEXITCODE -ne 0) {
-        Write-Fail "npx gigabot@latest init failed (exit code $LASTEXITCODE)."
+        Write-Fail "npx github:gignaati/gigabot init failed (exit code $LASTEXITCODE)."
         Pop-Location
         exit $LASTEXITCODE
     }
