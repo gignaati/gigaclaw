@@ -83,7 +83,8 @@
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
     "test": "echo \"No tests yet\" && exit 0",
-    "test:tty": "node scripts/test-tty-regression.mjs"
+    "test:tty": "node scripts/test-tty-regression.mjs",
+    "test:full": "node scripts/test-full.mjs"
   },
   "keywords": [
     "ai",
