@@ -49,10 +49,10 @@ const logo = `
 async function main() {
   console.log(chalk.cyan(logo));
 
-  clack.intro('GigaBot Setup Wizard');
+  clack.intro('GigaClaw Setup Wizard');
 
   const mode = await clack.select({
-    message: 'How do you want to run GigaBot?',
+    message: 'How do you want to run GigaClaw?',
     options: [
       {
         value: 'cloud',

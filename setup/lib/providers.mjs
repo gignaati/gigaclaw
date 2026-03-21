@@ -1,7 +1,7 @@
 /**
- * Provider registry — single source of truth for Giga Bot LLM providers.
+ * Provider registry — single source of truth for GigaClaw LLM providers.
  *
- * Giga Bot supports 6 providers:
+ * GigaClaw supports 6 providers:
  *   anthropic   — Claude (Anthropic)
  *   openai      — GPT (OpenAI)
  *   google      — Gemini (Google)
