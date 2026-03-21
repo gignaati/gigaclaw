@@ -29,6 +29,13 @@
       "when": 1772486536207,
       "tag": "0003_rename_code_workspaces",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1742500800000,
+      "tag": "0004_trust_ledger_audit_log",
+      "breakpoints": true
     }
   ]
 }

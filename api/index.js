@@ -7,6 +7,7 @@ import { chat, summarizeJob } from '../lib/ai/index.js';
 import { createNotification } from '../lib/db/notifications.js';
 import { loadTriggers } from '../lib/triggers.js';
 import { verifyApiKey } from '../lib/db/api-keys.js';
+import { logAction } from '../lib/db/audit-log.js';
 
 // Bot token from env, can be overridden by /telegram/register
 let telegramBotToken = null;
@@ -88,6 +89,18 @@ async function handleWebhook(request) {
 
   try {
     const result = await createJob(job);
+    // Audit log: record job creation via webhook
+    logAction({
+      actionType: 'job_create',
+      actor: 'api:webhook',
+      target: `job:${result.job_id || 'unknown'}`,
+      summary: `Job created via webhook — ${String(job).slice(0, 80)}`,
+      metadata: {
+        job_id: result.job_id,
+        title: result.title,
+        source: 'webhook',
+      },
+    });
     return Response.json(result);
   } catch (err) {
     console.error(err);

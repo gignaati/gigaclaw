@@ -660,3 +660,67 @@ runAll().then(() => {
   console.error('\n  ❌  Test runner crashed:', err.message);
   process.exit(1);
 });
+
+// ── Trust Ledger (v1.5.0) ──────────────────────────────────────────────────
+test('Trust Ledger: audit_log table defined in schema.js', () => {
+  const schema = fs.readFileSync(path.join(ROOT, 'lib/db/schema.js'), 'utf8');
+  assert(schema.includes("'audit_log'"), "schema.js must define the 'audit_log' table");
+  assert(schema.includes('prev_hash'), 'audit_log must have prev_hash column for hash chain');
+  assert(schema.includes('entry_hash'), 'audit_log must have entry_hash column');
+});
+
+test('Trust Ledger: migration 0004 SQL file exists', () => {
+  const sql = fs.readFileSync(path.join(ROOT, 'drizzle/0004_trust_ledger_audit_log.sql'), 'utf8');
+  assert(sql.includes('CREATE TABLE'), 'migration must create audit_log table');
+  assert(sql.includes('audit_log'), 'migration must reference audit_log');
+});
+
+test('Trust Ledger: audit-log.js exports logAction, getAuditLog, verifyAuditChain, getEgressSummary', () => {
+  const mod = fs.readFileSync(path.join(ROOT, 'lib/db/audit-log.js'), 'utf8');
+  assert(mod.includes('export function logAction'), 'must export logAction');
+  assert(mod.includes('export function getAuditLog'), 'must export getAuditLog');
+  assert(mod.includes('export function verifyAuditChain'), 'must export verifyAuditChain');
+  assert(mod.includes('export function getEgressSummary'), 'must export getEgressSummary');
+  assert(mod.includes('export function exportAuditLogJson'), 'must export exportAuditLogJson');
+});
+
+test('Trust Ledger: lib/ai/index.js instruments LLM calls with logAction', () => {
+  const ai = fs.readFileSync(path.join(ROOT, 'lib/ai/index.js'), 'utf8');
+  assert(ai.includes("import { logAction } from '../db/audit-log.js'"), 'ai/index.js must import logAction');
+  assert(ai.includes("actionType: 'llm_call'"), 'ai/index.js must log llm_call actions');
+  assert(ai.includes('tokens_in'), 'ai/index.js must log token counts');
+  assert(ai.includes('is_local'), 'ai/index.js must log is_local flag');
+});
+
+test('Trust Ledger: TrustLedgerPage component exists with EgressPanel', () => {
+  const page = fs.readFileSync(path.join(ROOT, 'lib/chat/components/trust-ledger-page.jsx'), 'utf8');
+  assert(page.includes('TrustLedgerPage'), 'must export TrustLedgerPage');
+  assert(page.includes('EgressPanel'), 'must include EgressPanel component');
+  assert(page.includes('ChainBanner'), 'must include ChainBanner component');
+  assert(page.includes('LogTable'), 'must include LogTable component');
+});
+
+test('Trust Ledger: trust-ledger route page exists in templates', () => {
+  const route = fs.readFileSync(path.join(ROOT, 'templates/app/trust-ledger/page.js'), 'utf8');
+  assert(route.includes('TrustLedgerPage'), 'route must render TrustLedgerPage');
+  assert(route.includes("from 'gigaclaw/chat'"), 'route must import from gigaclaw/chat');
+});
+
+test('Trust Ledger: ShieldIcon and DownloadIcon defined in icons.jsx', () => {
+  const icons = fs.readFileSync(path.join(ROOT, 'lib/chat/components/icons.jsx'), 'utf8');
+  assert(icons.includes('export function ShieldIcon'), 'ShieldIcon must be defined');
+  assert(icons.includes('export function DownloadIcon'), 'DownloadIcon must be defined');
+});
+
+test('Trust Ledger: AppSidebar includes Trust Ledger nav entry', () => {
+  const sidebar = fs.readFileSync(path.join(ROOT, 'lib/chat/components/app-sidebar.jsx'), 'utf8');
+  assert(sidebar.includes('/trust-ledger'), 'sidebar must link to /trust-ledger');
+  assert(sidebar.includes('ShieldIcon'), 'sidebar must use ShieldIcon for Trust Ledger');
+  assert(sidebar.includes('Trust Ledger'), 'sidebar must show Trust Ledger label');
+});
+
+test('Trust Ledger: package.json exports trust-ledger/actions and version is 1.5.0', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  assert(pkg.version === '1.5.0', `version must be 1.5.0, got ${pkg.version}`);
+  assert(pkg.exports['./trust-ledger/actions'], 'must export ./trust-ledger/actions');
+});
