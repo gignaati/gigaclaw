@@ -72,10 +72,10 @@ npm install
 ```bash
 npm run setup
 ```
-The wizard will ask for:
-- Your GitHub Personal Access Token
-- Your public URL (domain or ngrok URL)
-- Your LLM provider and API key (Claude, GPT, Gemini, PragatiGPT, or Ollama)
+The wizard will ask for your setup mode:
+- **Hybrid** (recommended) — Cloud + Local AI with smart routing
+- **Cloud** — GitHub + ngrok + Telegram, full features
+- **Local** — Ollama only, 100% offline
 
 **Step 4 — Start your agent:**
 ```bash
@@ -136,10 +136,47 @@ LLM_PROVIDER=custom       # Any OpenAI-compatible API
 - **Hot reload** — Push to `main` triggers automatic rebuild and restart
 
 ### GigaClaw Exclusive Features
+- **Hybrid Mode** — Cloud + Local AI with smart per-task routing (v1.6.0)
 - **PragatiGPT** — India's indigenous SLM for edge deployment
 - **Ollama** — Run any open-source model with zero cloud dependency
 - **Multi-LLM routing** — Different LLMs for chat vs. agent jobs
 - **Per-job LLM override** — Specify `llm_provider` and `llm_model` per cron job
+
+---
+
+## Hybrid Mode (New in v1.6.0)
+
+Run both cloud and local LLMs simultaneously. GigaClaw automatically routes each task to the best provider.
+
+```bash
+npm run setup   # Choose "Hybrid Mode" (recommended)
+```
+
+### Routing Strategies
+
+| Strategy | Best for |
+|----------|----------|
+| **Auto** | Smart routing — complex tasks go to cloud, simple ones stay local |
+| **Cost-Optimized** | Minimize API costs — local by default, cloud only when needed |
+| **Quality-First** | Best output quality — cloud by default, local for drafts |
+| **Privacy-First** | Maximum data privacy — local by default, cloud only for complex tasks |
+
+### How it works
+
+1. Setup configures a **cloud provider** (Claude, GPT, Gemini, PragatiGPT) and a **local provider** (Ollama)
+2. Each message is scored for complexity and privacy sensitivity
+3. The task router picks the optimal provider based on your chosen strategy
+4. Ollama availability is auto-detected at runtime — no reconfiguration needed
+
+```bash
+# Example .env for hybrid mode
+GIGACLAW_MODE=hybrid
+LLM_PROVIDER=anthropic           # Cloud (primary)
+LLM_MODEL=claude-sonnet-4-6
+LOCAL_LLM_PROVIDER=ollama         # Local (secondary)
+LOCAL_LLM_MODEL=llama3.2
+HYBRID_ROUTING=auto               # auto | cost-optimized | quality-first | privacy-first
+```
 
 ---
 
