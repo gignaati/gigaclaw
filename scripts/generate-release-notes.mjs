@@ -163,7 +163,7 @@ async function generateLLMSummary(version, structuredNotes, diffText, opts = {})
   const baseUrl = opts.baseUrl || process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com';
   const model   = opts.model   || process.env.MODEL || 'claude-3-5-haiku-20241022';
 
-  const prompt = `You are writing release notes for gigabot v${version} — an open-source npm package that lets developers scaffold autonomous AI agents in seconds.
+  const prompt = `You are writing release notes for gigaclaw v${version} — an open-source npm package that lets developers scaffold autonomous AI agents in seconds.
 
 Below is a structured list of changes parsed from conventional commits, followed by a code diff for context.
 
@@ -278,7 +278,7 @@ async function main() {
   parts.push('');
   parts.push(`**Full Changelog**: ${compareUrl}`);
   parts.push('');
-  parts.push(`**npm**: \`npm install gigabot@${version}\` · **Upgrade**: \`npx gigabot@latest upgrade\``);
+  parts.push(`**npm**: \`npm install gigaclaw@${version}\` · **Upgrade**: \`npx gigaclaw@latest upgrade\``);
 
   const output = parts.join('\n');
 

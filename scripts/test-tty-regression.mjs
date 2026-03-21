@@ -278,7 +278,7 @@ test('install.sh uses npx --yes to suppress "Ok to proceed?" prompt', () => {
   const installSh = fs.readFileSync(path.join(ROOT, 'install.sh'), 'utf8');
   assert(
     installSh.includes('npx --yes gigaclaw@latest') || installSh.includes('npx -y gigaclaw@latest') ||
-    installSh.includes('npx --yes gigabot@latest') || installSh.includes('npx -y gigabot@latest'),
+    installSh.includes('npx --yes gigaclaw@latest') || installSh.includes('npx -y gigaclaw@latest'),
     'install.sh is missing --yes on npx call — the "Ok to proceed? (y)" prompt will hang curl|bash installs'
   );
 });
@@ -304,12 +304,12 @@ test('install.sh runs npm install before npm run setup', () => {
   );
 });
 
-// ─── Test 20: bin/cli.js uses current version for gigabotDep (not ^1.0.0) ────
+// ─── Test 20: bin/cli.js uses current version for gigaclawDep (not ^1.0.0) ────
 test('bin/cli.js scaffolds package.json with current version, not hardcoded ^1.0.0', () => {
   const cliJs = fs.readFileSync(path.join(ROOT, 'bin', 'cli.js'), 'utf8');
   assert(
     !cliJs.includes("'^1.0.0'") && !cliJs.includes('"^1.0.0"'),
-    'bin/cli.js still hardcodes ^1.0.0 for gigabotDep — scaffolded projects will install the oldest version'
+    'bin/cli.js still hardcodes ^1.0.0 for gigaclawDep — scaffolded projects will install the oldest version'
   );
 });
 
@@ -499,7 +499,7 @@ test('Gigabot → Gigaclaw rename: package.json name is gigaclaw and README has 
   const staleCount = (readme.match(/\bgigabot\b/gi) || []).length;
   assert(
     staleCount === 0,
-    `README.md still contains ${staleCount} stale 'gigabot' reference(s)`
+    `README.md still contains ${staleCount} stale 'gigaclaw' reference(s)`
   );
 });
 

@@ -1,3 +1,3 @@
-import { withGigabot } from 'gigabot/config';
+import { withGigaclaw } from 'gigaclaw/config';
 
-export default withGigabot({});
+export default withGigaclaw({});
