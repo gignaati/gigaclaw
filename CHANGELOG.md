@@ -1,5 +1,41 @@
 # Changelog
 
+## v1.6.0 — 2026-03-21
+
+
+### ✨ New Features
+
+- Hybrid Cloud+Local AI Mode + full audit fixes (v1.6.0) [`5e49622`](https://github.com/gignaati/gigaclaw/commit/5e496229b2e13dc2a88913ce7fb9beb8a16a5569)
+- hybrid cloud+local AI mode with smart task routing (v1.6.0) [`9cb6ca9`](https://github.com/gignaati/gigaclaw/commit/9cb6ca9492062be58f391dd101db01b23da4f508)
+- add comprehensive full application test suite (124 tests) [`d1bcaa0`](https://github.com/gignaati/gigaclaw/commit/d1bcaa0e814f9324024d874a8a0b93a26aa5723b)
+
+### 🐛 Bug Fixes
+
+- update package-lock.json to include next-themes@0.4.6 (unblocks CI npm ci) [`4adf029`](https://github.com/gignaati/gigaclaw/commit/4adf029b34db8a241ef487bd59b8e09143fc34c3)
+- update stale version assertion in regression test (1.5.0 → 1.6.0) [`6c3ecff`](https://github.com/gignaati/gigaclaw/commit/6c3ecff7cfa50ddf68aeca58c689e3c959bed42d)
+- update ASCII art logo from GigaBot to GigaClaw in setup wizard [`232ca1a`](https://github.com/gignaati/gigaclaw/commit/232ca1a8f1f75c1b83e61b91cccb2e220ff76ab2)
+- update regression test expectations for GIGACLAW_SKIP_SETUP env var [`7fa816d`](https://github.com/gignaati/gigaclaw/commit/7fa816d92ae7934dcb38862a8818c0958d7b3ed0)
+- rename remaining GigaBot refs in test suite and setup-local [`f66ff63`](https://github.com/gignaati/gigaclaw/commit/f66ff6374254d93428b6db31b76c7cf0fdbb8a22)
+- brand rename in setup wizard + dependency cleanup [`3c98521`](https://github.com/gignaati/gigaclaw/commit/3c98521eec252ac4f4ab2a7c976c5bc44b3bd064)
+- complete brand rename in setup, templates, and docs [`97570a9`](https://github.com/gignaati/gigaclaw/commit/97570a984150f6e8ff0def03081491e7a98838fc)
+- resolve all P0/P1/P2 audit findings for v1.6.0 release health [`6742c63`](https://github.com/gignaati/gigaclaw/commit/6742c63a6fc47704c9acc735ca315e72e053734e)
+
+### 📖 Documentation
+
+- add hybrid mode documentation to CLAUDE.md, README.md, and .env.example [`a5f7e9a`](https://github.com/gignaati/gigaclaw/commit/a5f7e9a4a3205e48b271dcf5524a3fed5eb5c3eb)
+
+### 🔧 Other Changes
+
+- complete AS-IS codebase audit (v1.5.1) — 9-phase systematic review [`929e33a`](https://github.com/gignaati/gigaclaw/commit/929e33a6f457633bbb2959efe085f90b95ca57aa)
+
+---
+
+**Full Changelog**: https://github.com/gignaati/gigaclaw/compare/v1.5.1...v1.6.0
+
+**npm**: `npm install gigaclaw@1.6.0` · **Upgrade**: `npx gigaclaw@latest upgrade`
+---
+
+
 ## 1.2.4 — 2026-03-05
 
 ### Cross-Platform QA Release — Mac/Linux install + Windows login fixes
