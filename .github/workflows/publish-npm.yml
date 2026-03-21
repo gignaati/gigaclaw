@@ -258,7 +258,7 @@ jobs:
           gh release create "$TAG" \
             $PRERELEASE_FLAG \
             --repo "${{ github.repository }}" \
-            --title "Giga Bot $TAG" \
+            --title "GigaClaw $TAG" \
             --notes-file /tmp/release_notes.md
           echo "GitHub Release: https://github.com/${{ github.repository }}/releases/tag/$TAG"
 

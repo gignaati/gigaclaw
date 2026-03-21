@@ -12,7 +12,7 @@ RUN npm install -g pm2
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev && \
-    npm install --no-save gigabot@$(node -p "require('./package.json').version")
+    npm install --no-save gigaclaw@$(node -p "require('./package.json').version")
 
 COPY /templates/docker/event-handler/ecosystem.config.cjs /opt/ecosystem.config.cjs
 

@@ -32,6 +32,7 @@ The `templates/` directory contains **only files that get scaffolded into user p
 │   ├── auth/                   # NextAuth config, helpers, middleware, server actions
 │   ├── channels/               # Channel adapters (base class, Telegram, factory)
 │   ├── chat/                   # Chat route handler, server actions, React UI components
+│   ├── code/                   # Code workspace functionality (browser-based coding agent sessions)
 │   ├── db/                     # SQLite via Drizzle (schema, migrations, api-keys)
 │   ├── tools/                  # Job creation, GitHub API, Telegram, OpenAI Whisper
 │   └── utils/
@@ -63,6 +64,9 @@ The `templates/` directory contains **only files that get scaffolded into user p
 | `lib/ai/index.js` | Chat, streaming, and job summary functions |
 | `lib/ai/agent.js` | LangGraph agent with SQLite checkpointing and tool use |
 | `lib/channels/base.js` | Channel adapter base class (normalize messages across platforms) |
+| `lib/code/index.js` | Code workspace page component exports |
+| `lib/code/actions.js` | Server actions for code workspace CRUD |
+| `lib/code/ws-proxy.js` | WebSocket proxy for terminal connections to workspace containers |
 | `lib/db/index.js` | Database initialization — SQLite via Drizzle ORM |
 | `lib/db/api-keys.js` | API key management (SHA-256 hashed, timing-safe verify) |
 
@@ -78,6 +82,9 @@ The `templates/` directory contains **only files that get scaffolded into user p
 | `gigaclaw/chat` | `lib/chat/components/index.js` | Chat UI components |
 | `gigaclaw/chat/actions` | `lib/chat/actions.js` | Server actions for chats, notifications, and swarm |
 | `gigaclaw/chat/api` | `lib/chat/api.js` | Dedicated chat streaming route handler (session auth) |
+| `gigaclaw/code` | `lib/code/index.js` | Code workspace components |
+| `gigaclaw/code/actions` | `lib/code/actions.js` | Server actions for workspace management |
+| `gigaclaw/code/ws-proxy` | `lib/code/ws-proxy.js` | WebSocket proxy for terminal access |
 | `gigaclaw/db` | `lib/db/index.js` | Database access |
 | `gigaclaw/middleware` | `lib/auth/middleware.js` | Auth middleware |
 

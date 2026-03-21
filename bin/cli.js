@@ -25,6 +25,9 @@ if (command === '--version' || command === '-v') {
 const MANAGED_PATHS = [
   '.github/workflows/',
   'docker/event-handler/',
+  'docker/claude-code-job/',
+  'docker/claude-code-workspace/',
+  'docker/pi-coding-agent-job/',
   'docker-compose.yml',
   'docker-compose.local.yml',
   '.dockerignore',
@@ -136,7 +139,7 @@ async function init() {
         if (deps.gigaclaw || devDeps.gigaclaw) {
           isExistingProject = true;
         }
-      } catch {}
+      } catch (e) { console.warn('  Warning: could not parse existing package.json:', e.message); }
     }
 
     if (!isExistingProject) {
@@ -339,7 +342,7 @@ GIGACLAW_VERSION=${version}
       }
       fs.writeFileSync(envPath, envContent);
       console.log(`  Updated GIGACLAW_VERSION to ${version}`);
-    } catch {}
+    } catch (e) { console.warn('  Warning: could not update GIGACLAW_VERSION in .env:', e.message); }
   }
 
   console.log('\nDone! Run: npm run setup\n');
@@ -438,7 +441,7 @@ function diff(filePath) {
 
   try {
     // Use git diff for nice colored output, fall back to plain diff
-    execSync(`git diff --no-index -- "${dest}" "${src}"`, { stdio: 'inherit', shell: true });
+    execFileSync('git', ['diff', '--no-index', '--', dest, src], { stdio: 'inherit' });
     console.log('\nFiles are identical.\n');
   } catch (e) {
     // git diff exits with 1 when files differ (output already printed)
@@ -470,7 +473,8 @@ function setup() {
   const setupScript = path.join(__dirname, '..', 'setup', 'setup.mjs');
   try {
     execFileSync(process.execPath, [setupScript], { stdio: 'inherit', cwd: process.cwd() });
-  } catch {
+  } catch (e) {
+    console.error(e.message);
     process.exit(1);
   }
 }
@@ -479,7 +483,8 @@ function setupTelegram() {
   const setupScript = path.join(__dirname, '..', 'setup', 'setup-telegram.mjs');
   try {
     execFileSync(process.execPath, [setupScript], { stdio: 'inherit', cwd: process.cwd() });
-  } catch {
+  } catch (e) {
+    console.error(e.message);
     process.exit(1);
   }
 }
@@ -505,6 +510,13 @@ async function resetAuth() {
 async function upgrade() {
   const cwd = process.cwd();
   const tag = parseUpgradeTarget(args[0]);
+
+  // Validate tag to prevent shell injection
+  if (!/^[a-zA-Z0-9._-]+$/.test(tag)) {
+    console.error(`\n  Invalid version or tag: ${args[0]}\n`);
+    process.exit(1);
+  }
+
   const { confirm, isCancel } = await import('@clack/prompts');
 
   // --- Pre-flight: verify this is a gigaclaw project ---
@@ -553,7 +565,7 @@ async function upgrade() {
       execSync('git add -A && git commit -m "save local changes before gigaclaw upgrade"', { stdio: 'inherit', cwd, shell: true });
     } catch {
       console.error('\n  Could not save your local changes. Please try again.\n');
-      return;
+      process.exit(1);
     }
   }
 
@@ -569,7 +581,7 @@ async function upgrade() {
     console.error('    2. Edit each file to keep the version you want');
     console.error('    3. Run: git add -A && git rebase --continue');
     console.error('    4. Then run the upgrade again\n');
-    return;
+    process.exit(1);
   }
 
   // --- Install ---

@@ -1,5 +1,5 @@
 /**
- * Giga Bot — Middleware
+ * GigaClaw — Middleware
  * Powered by Gignaati | https://gignaati.com
  *
  * Next.js requires the `config` export to be a static literal object defined

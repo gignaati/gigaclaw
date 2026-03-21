@@ -1,6 +1,6 @@
 <div align="center">
 
-# Giga Bot
+# GigaClaw
 
 ### Autonomous AI Agent Platform — Powered by Gignaati
 
@@ -18,16 +18,16 @@ India-first. Edge-native. Zero vendor lock-in.
 
 ---
 
-## What is Giga Bot?
+## What is GigaClaw?
 
-Giga Bot is a self-hosted, autonomous AI agent platform. You deploy it to your own server or VPS, and it runs 24/7 — responding to messages, executing scheduled jobs, handling webhooks, writing code, managing files, and completing complex multi-step tasks.
+GigaClaw is a self-hosted, autonomous AI agent platform. You deploy it to your own server or VPS, and it runs 24/7 — responding to messages, executing scheduled jobs, handling webhooks, writing code, managing files, and completing complex multi-step tasks.
 
 It is built on a two-layer architecture:
 
 - **Event Handler** — A Next.js server that handles real-time chat (web UI + Telegram), manages your agent's configuration, and creates jobs for the agent to execute.
 - **Agent Engine** — A Docker container that runs your agent jobs using GitHub Actions or a local Docker daemon. The agent can write code, run shell commands, browse the web, and interact with GitHub.
 
-Giga Bot is the only autonomous agent platform with **native PragatiGPT support** — India's indigenous Small Language Model for edge deployment, delivering 100% data privacy and zero foreign cloud dependency.
+GigaClaw is the only autonomous agent platform with **native PragatiGPT support** — India's indigenous Small Language Model for edge deployment, delivering 100% data privacy and zero foreign cloud dependency.
 
 ---
 
@@ -45,7 +45,7 @@ irm https://raw.githubusercontent.com/gignaati/gigaclaw/main/install.ps1 | iex
 
 ### All Platforms (npm / npx)
 ```bash
-# Create a new Giga Bot project
+# Create a new GigaClaw project
 mkdir my-gigaclaw && cd my-gigaclaw
 npx gigaclaw@latest init
 
@@ -61,7 +61,7 @@ npm run setup
 
 **Step 1 — Create a new GitHub repository** for your agent (e.g., `my-gigaclaw`).
 
-**Step 2 — Install Giga Bot** into a local folder with the same name:
+**Step 2 — Install GigaClaw** into a local folder with the same name:
 ```bash
 mkdir my-gigaclaw && cd my-gigaclaw
 npx gigaclaw@latest init
@@ -88,7 +88,7 @@ docker compose up -d
 
 ## Supported LLM Providers
 
-Giga Bot supports **6 LLM providers** — more than any other self-hosted agent platform:
+GigaClaw supports **6 LLM providers** — more than any other self-hosted agent platform:
 
 | Provider | Description | Data Privacy |
 |---|---|---|
@@ -135,7 +135,7 @@ LLM_PROVIDER=custom       # Any OpenAI-compatible API
 - **Auto-merge** — Agent can merge its own PRs after review
 - **Hot reload** — Push to `main` triggers automatic rebuild and restart
 
-### Giga Bot Exclusive Features
+### GigaClaw Exclusive Features
 - **PragatiGPT** — India's indigenous SLM for edge deployment
 - **Ollama** — Run any open-source model with zero cloud dependency
 - **Multi-LLM routing** — Different LLMs for chat vs. agent jobs
@@ -162,7 +162,7 @@ npx gigaclaw set-var <KEY> [VALUE]            # Set GitHub repository variable
 
 ## Configuration Files
 
-These files in `config/` define your agent's personality and behavior. They are **yours to customize** — Giga Bot will never overwrite them:
+These files in `config/` define your agent's personality and behavior. They are **yours to customize** — GigaClaw will never overwrite them:
 
 | File | Purpose |
 |---|---|
@@ -187,7 +187,7 @@ npx gigaclaw upgrade 1.2.72   # Specific version
 
 ## Deployment
 
-Giga Bot runs on any Linux server with Docker. Recommended:
+GigaClaw runs on any Linux server with Docker. Recommended:
 
 | Provider | Spec | Monthly Cost |
 |---|---|---|
