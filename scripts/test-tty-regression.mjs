@@ -546,6 +546,109 @@ test('chat-header.jsx Export submenu contains md, txt, and json format options',
   assert(src.includes("handleExport('json')"), 'chat-header.jsx is missing json export option');
 });
 
+// ─── Test 36: install.sh checks for Ollama and provides install guidance ────────────────────
+test('install.sh checks for Ollama and shows install instructions', () => {
+  const installSh = fs.readFileSync(path.join(ROOT, 'install.sh'), 'utf8');
+  assert(
+    installSh.includes('ollama') || installSh.includes('Ollama'),
+    'install.sh is missing Ollama check — Local Mode users will not know they need Ollama'
+  );
+  assert(
+    installSh.includes('https://ollama.com') || installSh.includes('ollama.com/install'),
+    'install.sh is missing Ollama install URL — users need a link to install Ollama'
+  );
+  assert(
+    installSh.includes('ollama serve'),
+    'install.sh is missing `ollama serve` start command — users need to know how to start Ollama'
+  );
+});
+
+// ─── Test 37: install.sh has retry loop for Ollama server not running ────────────────────
+test('install.sh has retry loop when Ollama is installed but not running', () => {
+  const installSh = fs.readFileSync(path.join(ROOT, 'install.sh'), 'utf8');
+  assert(
+    installSh.includes('localhost:11434') || installSh.includes('11434'),
+    'install.sh is missing Ollama server check on localhost:11434'
+  );
+  assert(
+    installSh.includes('retries') || installSh.includes('retry') || installSh.includes('press_enter_to_retry') || installSh.includes('Press Enter'),
+    'install.sh is missing a retry loop for when Ollama is not running — users need guidance to start it'
+  );
+});
+
+// ─── Test 38: install.sh mentions ngrok for Cloud Mode ───────────────────────────────────
+test('install.sh mentions ngrok for Cloud Mode users', () => {
+  const installSh = fs.readFileSync(path.join(ROOT, 'install.sh'), 'utf8');
+  assert(
+    installSh.includes('ngrok'),
+    'install.sh is missing ngrok mention — Cloud Mode users will not know they need ngrok for tunnelling'
+  );
+  assert(
+    installSh.includes('ngrok.com') || installSh.includes('ngrok.com/download'),
+    'install.sh is missing ngrok download URL'
+  );
+});
+
+// ─── Test 39: install.ps1 checks for Ollama and provides install guidance ────────────────
+test('install.ps1 checks for Ollama and shows install instructions', () => {
+  const ps1 = fs.readFileSync(path.join(ROOT, 'install.ps1'), 'utf8');
+  assert(
+    ps1.includes('ollama') || ps1.includes('Ollama'),
+    'install.ps1 is missing Ollama check — Local Mode users will not know they need Ollama'
+  );
+  assert(
+    ps1.includes('https://ollama.com') || ps1.includes('ollama.com/download'),
+    'install.ps1 is missing Ollama install URL — users need a link to install Ollama'
+  );
+  assert(
+    ps1.includes('ollama serve'),
+    'install.ps1 is missing `ollama serve` start command — users need to know how to start Ollama'
+  );
+});
+
+// ─── Test 40: install.ps1 has retry loop for Ollama server not running ───────────────────
+test('install.ps1 has retry loop when Ollama is installed but not running', () => {
+  const ps1 = fs.readFileSync(path.join(ROOT, 'install.ps1'), 'utf8');
+  assert(
+    ps1.includes('localhost:11434') || ps1.includes('11434'),
+    'install.ps1 is missing Ollama server check on localhost:11434'
+  );
+  assert(
+    ps1.includes('retries') || ps1.includes('retry') || ps1.includes('Read-Host') || ps1.includes('Press Enter'),
+    'install.ps1 is missing a retry loop for when Ollama is not running — users need guidance to start it'
+  );
+});
+
+// ─── Test 41: Both installers use Gigaclaw branding (not Giga Bot) ───────────────────────
+test('Both installers use Gigaclaw branding — no stale Giga Bot references', () => {
+  const installSh = fs.readFileSync(path.join(ROOT, 'install.sh'), 'utf8');
+  const installPs1 = fs.readFileSync(path.join(ROOT, 'install.ps1'), 'utf8');
+
+  // install.sh must have Gigaclaw in banner
+  assert(
+    installSh.includes('Gigaclaw'),
+    'install.sh banner is missing Gigaclaw branding'
+  );
+  // install.sh must not have stale Giga Bot text
+  const shStaleCount = (installSh.match(/Giga Bot/g) || []).length;
+  assert(
+    shStaleCount === 0,
+    `install.sh still contains ${shStaleCount} stale 'Giga Bot' reference(s) — must be renamed to Gigaclaw`
+  );
+
+  // install.ps1 must have Gigaclaw in banner
+  assert(
+    installPs1.includes('Gigaclaw'),
+    'install.ps1 banner is missing Gigaclaw branding'
+  );
+  // install.ps1 must not have stale Giga Bot text
+  const ps1StaleCount = (installPs1.match(/Giga Bot/g) || []).length;
+  assert(
+    ps1StaleCount === 0,
+    `install.ps1 still contains ${ps1StaleCount} stale 'Giga Bot' reference(s) — must be renamed to Gigaclaw`
+  );
+});
+
 // ─── Run all tests and print final summary ───────────────────────────────────
 runAll().then(() => {
   const total = passed + failed + skipped;
