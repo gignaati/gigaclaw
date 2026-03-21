@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * GigaBot Regression Test Suite
+ * GigaClaw Regression Test Suite
  *
  * Validates cross-platform install correctness:
  *   Tests  1-10  — TTY re-attachment (curl|bash), setup file syntax
  *   Tests 11-13  — Windows-safe AUTH_SECRET, shell:true, macOS PATH sourcing
  *   Tests 14-17  — install.ps1 PowerShell Windows installer
- *   Tests 18-20  — install.sh critical flow: npx --yes, npm install, GIGABOT_DIR
+ *   Tests 18-20  — install.sh critical flow: npx --yes, npm install, GIGACLAW_DIR
  *
  * NOTE: Tests 7 and 9 (physical /dev/tty access) are skipped on headless CI
  * runners (GitHub Actions, Docker without TTY) where /dev/tty is not attached
@@ -69,7 +69,7 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-console.log('\n🔍  GigaBot Regression Tests\n');
+console.log('\n🔍  GigaClaw Regression Tests\n');
 if (IS_CI) console.log('  ℹ️  Headless CI detected — /dev/tty physical-access tests will be skipped\n');
 
 // ─── Test 1: install.sh has exec < /dev/tty guard ────────────────────────────

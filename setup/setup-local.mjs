@@ -254,7 +254,7 @@ export async function run() {
   clack.log.step(`[${++currentStep}/${TOTAL_STEPS}] Writing Configuration`);
 
   const envVars = {
-    GIGABOT_MODE: 'local',
+    GIGACLAW_MODE: 'local',
     LLM_PROVIDER: 'ollama',
     LLM_MODEL: selectedModel,
     OLLAMA_BASE_URL: 'http://localhost:11434',
@@ -267,7 +267,7 @@ export async function run() {
   clack.log.success('.env written with local configuration');
 
   // ─── Step 5: Start server ─────────────────────────────────────────────────
-  clack.log.step(`[${++currentStep}/${TOTAL_STEPS}] How to start GigaBot`);
+  clack.log.step(`[${++currentStep}/${TOTAL_STEPS}] How to start GigaClaw`);
 
   const composeFile = fs.existsSync(path.join(process.cwd(), 'docker-compose.local.yml'))
     ? 'docker-compose.local.yml'
@@ -281,7 +281,7 @@ export async function run() {
   } catch { /* not running */ }
 
   if (serverRunning) {
-    clack.log.success('GigaBot is already running at http://localhost:3000');
+    clack.log.success('GigaClaw is already running at http://localhost:3000');
   } else {
     // Check if Docker is available
     let dockerAvailable = false;
@@ -292,7 +292,7 @@ export async function run() {
 
     // Ask user how they want to start
     const startMethod = await clack.select({
-      message: 'How would you like to start GigaBot?',
+      message: 'How would you like to start GigaClaw?',
       options: [
         {
           value: 'dev',
@@ -312,9 +312,9 @@ export async function run() {
     });
 
     if (clack.isCancel(startMethod) || startMethod === 'later') {
-      clack.log.info('No problem — start GigaBot when you are ready.');
+      clack.log.info('No problem — start GigaClaw when you are ready.');
     } else if (startMethod === 'dev') {
-      clack.log.info('Starting GigaBot with npm run dev...');
+      clack.log.info('Starting GigaClaw with npm run dev...');
       clack.log.info('(Press Ctrl+C to stop the server)');
       clack.outro('Chat with your agent at http://localhost:3000');
       // exec npm run dev in the foreground so the user sees the output
@@ -332,10 +332,10 @@ export async function run() {
           '  Then run: docker compose -f ' + composeFile + ' up -d'
         );
       } else {
-        clack.log.info(`Building and starting GigaBot with Docker...\n  (First build takes ~2-3 minutes — subsequent starts are instant)`);
+        clack.log.info(`Building and starting GigaClaw with Docker...\n  (First build takes ~2-3 minutes — subsequent starts are instant)`);
         try {
           execSync(`docker compose -f ${composeFile} up -d --build`, { stdio: 'inherit' });
-          clack.log.success('GigaBot started via Docker');
+          clack.log.success('GigaClaw started via Docker');
         } catch {
           clack.log.warn(
             'Docker start failed. Try the dev server instead:\n\n' +
