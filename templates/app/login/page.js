@@ -1,4 +1,4 @@
-import { getPageAuthState } from 'gigabot/auth';
+import { getPageAuthState } from 'gigaclaw/auth';
 import { AsciiLogo } from '../components/ascii-logo';
 import { SetupForm } from '../components/setup-form';
 import { LoginForm } from '../components/login-form';

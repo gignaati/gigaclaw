@@ -1,5 +1,5 @@
-import { auth } from 'gigabot/auth';
-import { SettingsLayout } from 'gigabot/chat';
+import { auth } from 'gigaclaw/auth';
+import { SettingsLayout } from 'gigaclaw/chat';
 
 export default async function Layout({ children }) {
   const session = await auth();

@@ -56,7 +56,7 @@ git commit -m "update skills to latest"
 # Beta release (does not affect `latest` tag — safe for testing)
 npm publish --tag beta
 
-# Stable release (updates `latest` — what users get with `npm install gigabot`)
+# Stable release (updates `latest` — what users get with `npm install gigaclaw`)
 npm publish
 ```
 
@@ -67,6 +67,6 @@ npm publish
 npm pack --dry-run
 
 # Check a published version
-npm view gigabot versions --json
-npm pack gigabot@<version> && tar tzf gigabot-<version>.tgz
+npm view gigaclaw versions --json
+npm pack gigaclaw@<version> && tar tzf gigaclaw-<version>.tgz
 ```

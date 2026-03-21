@@ -1,4 +1,4 @@
-# Contributing to gigabot
+# Contributing to gigaclaw
 
 Thanks for your interest in contributing! We welcome bug fixes, features, docs improvements, and other contributions.
 

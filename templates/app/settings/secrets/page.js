@@ -1,4 +1,4 @@
-import { SettingsSecretsPage } from 'gigabot/chat';
+import { SettingsSecretsPage } from 'gigaclaw/chat';
 
 export default function SecretsRoute() {
   return <SettingsSecretsPage />;

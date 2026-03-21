@@ -1,6 +1,6 @@
 import { createServer } from 'http';
 import next from 'next';
-import { attachCodeProxy } from 'gigabot/code/ws-proxy';
+import { attachCodeProxy } from 'gigaclaw/code/ws-proxy';
 
 const app = next({ dev: false });
 const handle = app.getRequestHandler();

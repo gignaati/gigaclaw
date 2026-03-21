@@ -6,15 +6,15 @@ Giga Bot v1.1.4 permanently resolves the Next.js / Turbopack middleware build er
 
 ### 🐛 Bug Fixes
 
-- Added `middleware.js` to `MANAGED_PATHS` in `bin/cli.js` — `npx gigabot init` and `npx gigabot upgrade` now always overwrite `middleware.js` with the correct template that defines `config` as a static inline literal
-- Removed `config` export from `lib/auth/middleware.js` (the module exported as `gigabot/middleware`) — even if a user manually writes `export { config } from 'gigabot/middleware'`, there is nothing to re-export, making the failure mode structurally impossible
+- Added `middleware.js` to `MANAGED_PATHS` in `bin/cli.js` — `npx gigaclaw init` and `npx gigaclaw upgrade` now always overwrite `middleware.js` with the correct template that defines `config` as a static inline literal
+- Removed `config` export from `lib/auth/middleware.js` (the module exported as `gigaclaw/middleware`) — even if a user manually writes `export { config } from 'gigaclaw/middleware'`, there is nothing to re-export, making the failure mode structurally impossible
 
 ### How to fix if you are affected
 
-Run `npx gigabot@latest upgrade` — this will automatically overwrite your `middleware.js` with the correct template. No manual file editing required.
+Run `npx gigaclaw@latest upgrade` — this will automatically overwrite your `middleware.js` with the correct template. No manual file editing required.
 
 ---
 
-**Full Changelog**: https://github.com/gignaati/gigabot/compare/v1.1.2...v1.1.4
+**Full Changelog**: https://github.com/gignaati/gigaclaw/compare/v1.1.2...v1.1.4
 
-**npm**: `npm install gigabot@1.1.4` · **Upgrade**: `npx gigabot@latest upgrade`
+**npm**: `npm install gigaclaw@1.1.4` · **Upgrade**: `npx gigaclaw@latest upgrade`

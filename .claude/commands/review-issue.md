@@ -15,7 +15,7 @@ First, determine the issue type from labels or content:
 ### Bug Reports (label: `bug`)
 
 Check that the issue includes:
-- **NPM Version** (gigabot version from package.json or npm list)
+- **NPM Version** (gigaclaw version from package.json or npm list)
 - **Platform** (macOS, Linux, or Windows)
 - **Description** (what happened, what they expected)
 - **Steps to Reproduce** (minimal repro steps)

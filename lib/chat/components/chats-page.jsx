@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { PageLayout } from './page-layout.js';
-import { MessageIcon, CodeIcon, TrashIcon, SearchIcon, PlusIcon, MoreHorizontalIcon, StarIcon, StarFilledIcon, PencilIcon } from './icons.js';
-import { getChats, deleteChat, renameChat, starChat } from '../actions.js';
+import { MessageIcon, CodeIcon, TrashIcon, SearchIcon, PlusIcon, MoreHorizontalIcon, StarIcon, StarFilledIcon, PencilIcon, ExportIcon } from './icons.js';
+import { getChats, deleteChat, renameChat, starChat, exportAllChats } from '../actions.js';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from './ui/dropdown-menu.js';
 import { ConfirmDialog } from './ui/confirm-dialog.js';
 import { cn } from '../utils.js';
@@ -63,6 +63,7 @@ export function ChatsPage({ session }) {
   const [chats, setChats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
+  const [isExportingAll, setIsExportingAll] = useState(false);
 
   const navigateToChat = (id) => {
     window.location.href = id ? `/chat/${id}` : '/';
@@ -103,6 +104,32 @@ export function ChatsPage({ session }) {
     if (!success) loadChats();
   };
 
+  const handleExportAll = async (format) => {
+    if (isExportingAll) return;
+    setIsExportingAll(true);
+    try {
+      const exports = await exportAllChats(format);
+      if (!exports || exports.length === 0) return;
+      for (let i = 0; i < exports.length; i++) {
+        const { filename, content, mimeType } = exports[i];
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        if (i < exports.length - 1) await new Promise((r) => setTimeout(r, 120));
+      }
+    } catch (err) {
+      console.error('Export all failed:', err);
+    } finally {
+      setIsExportingAll(false);
+    }
+  };
+
   const handleRename = async (chatId, title) => {
     setChats((prev) =>
       prev.map((c) => (c.id === chatId ? { ...c, title } : c))
@@ -122,15 +149,40 @@ export function ChatsPage({ session }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Chats</h1>
-        <a
-          href="/"
-          onClick={(e) => { e.preventDefault(); navigateToChat(null); }}
-          className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium bg-foreground text-background hover:bg-foreground/90"
-          style={{ textDecoration: 'inherit' }}
-        >
-          <PlusIcon size={14} />
-          New chat
-        </a>
+        <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium border border-input bg-background hover:bg-muted disabled:opacity-50"
+                disabled={isExportingAll || chats.length === 0}
+                aria-label="Export all chats"
+              >
+                <ExportIcon size={14} />
+                {isExportingAll ? 'Exporting…' : 'Export All'}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleExportAll('md')}>
+                <span>Markdown (.md)</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExportAll('txt')}>
+                <span>Plain Text (.txt)</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExportAll('json')}>
+                <span>JSON (.json)</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <a
+            href="/"
+            onClick={(e) => { e.preventDefault(); navigateToChat(null); }}
+            className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium bg-foreground text-background hover:bg-foreground/90"
+            style={{ textDecoration: 'inherit' }}
+          >
+            <PlusIcon size={14} />
+            New chat
+          </a>
+        </div>
       </div>
 
       {/* Search */}

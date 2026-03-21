@@ -1,6 +1,6 @@
 # Claude Code CLI vs Pi Coding Agent
 
-gigabot supports two agent backends for running jobs. Choose the one that fits your setup.
+gigaclaw supports two agent backends for running jobs. Choose the one that fits your setup.
 
 |  | Pi Coding Agent | Claude Code CLI |
 |---|---|---|
@@ -13,14 +13,14 @@ gigabot supports two agent backends for running jobs. Choose the one that fits y
 
 ## Switching backends
 
-Run `gigabot setup` to reconfigure, or set the `AGENT_BACKEND` GitHub variable directly:
+Run `gigaclaw setup` to reconfigure, or set the `AGENT_BACKEND` GitHub variable directly:
 
 ```bash
 # Switch to Claude Code
-npx gigabot set-var AGENT_BACKEND claude-code
+npx gigaclaw set-var AGENT_BACKEND claude-code
 
 # Switch to Pi
-npx gigabot set-var AGENT_BACKEND pi
+npx gigaclaw set-var AGENT_BACKEND pi
 ```
 
 ## OAuth token setup

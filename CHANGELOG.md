@@ -22,9 +22,9 @@ This is the same pattern used by Homebrew, Rustup, and the nvm installer itself.
 
 **Root cause:** `AUTH_SECRET` was generated with `randomBytes(32).toString('base64')`, which produces characters `+`, `/`, and `=`. When dotenv parses an unquoted value containing these characters on Windows (e.g., `AUTH_SECRET=NB0vbs97v9M+ODL2=`), the `+` is treated as a space and `=` terminates the value. The JWT signing key is silently corrupted. NextAuth then fails to verify any session token and returns an opaque "unexpected syntax" error on the login page.
 
-**Fix:** Switched to `base64url` encoding (RFC 4648 §5) in both `gigabot init` (`.env` seed) and `gigabot reset-auth`. `base64url` uses only `A-Z`, `a-z`, `0-9`, `-`, and `_` — no characters that require quoting in dotenv.
+**Fix:** Switched to `base64url` encoding (RFC 4648 §5) in both `gigaclaw init` (`.env` seed) and `gigaclaw reset-auth`. `base64url` uses only `A-Z`, `a-z`, `0-9`, `-`, and `_` — no characters that require quoting in dotenv.
 
-**Affected users:** Anyone who ran `gigabot init` on Windows before v1.2.4 has a corrupted `AUTH_SECRET`. Run `npm run reset-auth` to regenerate it, then restart the server.
+**Affected users:** Anyone who ran `gigaclaw init` on Windows before v1.2.4 has a corrupted `AUTH_SECRET`. Run `npm run reset-auth` to regenerate it, then restart the server.
 
 #### Bug 3 — Windows `npm install` / `npm run build` / `git` command failures
 
@@ -44,7 +44,7 @@ This is the same pattern used by Homebrew, Rustup, and the nvm installer itself.
 
 #### Root cause
 
-When GigaBot is installed via `curl -fsSL .../install.sh | bash`, bash's stdin
+When GigaClaw is installed via `curl -fsSL .../install.sh | bash`, bash's stdin
 is the curl pipe. Every child process spawned by that bash script — including
 `npm run setup` → `node setup/setup.mjs` — inherits that pipe as stdin.
 `@clack/prompts` calls `setRawMode(stdin, true)` but since `stdin.isTTY` is
@@ -83,14 +83,14 @@ scripts.
 
 ### Branding: Remove all ThePopeBot / @stephengpope references
 
-All mentions of the original upstream project (ThePopeBot) and its contributor (@stephengpope) have been removed from every public-facing file in the repository. GigaBot is an independent product built and maintained by Gignaati — the historical inheritance language no longer appears anywhere in the codebase, documentation, or release notes.
+All mentions of the original upstream project (ThePopeBot) and its contributor (@stephengpope) have been removed from every public-facing file in the repository. GigaClaw is an independent product built and maintained by Gignaati — the historical inheritance language no longer appears anywhere in the codebase, documentation, or release notes.
 
 #### Files cleaned
 
 - `CHANGELOG.md` — v1.1.5 section reworded; all ThePopeBot references removed
 - `scripts/notes_v1.1.1.md` — API route rename described without referencing the old name
-- `scripts/notes_v1.1.2.md` — branding cleanup described as GigaBot completion, not legacy replacement
-- `scripts/notes_v1.1.5.md` — banner update described as GigaBot identity, old banner ASCII art removed
+- `scripts/notes_v1.1.2.md` — branding cleanup described as GigaClaw completion, not legacy replacement
+- `scripts/notes_v1.1.5.md` — banner update described as GigaClaw identity, old banner ASCII art removed
 
 ---
 
@@ -99,7 +99,7 @@ All mentions of the original upstream project (ThePopeBot) and its contributor (
 ### Fixed — Onboarding friction (3 bugs from user report)
 
 - **install.sh: auto-cd and auto-launch setup** — the one-command installer now automatically `cd`s into the project directory and launches `npm run setup` immediately. Previously, users who ran `npm run setup` from the parent directory got `npm error Missing script: "setup"` because they were in the wrong directory. The installer now handles this transparently with no manual steps required.
-- **docker-compose.local.yml: removed private Docker image reference** — the compose file previously referenced `gignaati/gigabot:event-handler-*` which is a private image that requires `docker login` and does not exist publicly. It now uses `dockerfile_inline` to build GigaBot directly from local source using the official `node:20-alpine` image. No registry login required. First build: ~2–3 minutes; subsequent starts: instant.
+- **docker-compose.local.yml: removed private Docker image reference** — the compose file previously referenced `gignaati/gigaclaw:event-handler-*` which is a private image that requires `docker login` and does not exist publicly. It now uses `dockerfile_inline` to build GigaClaw directly from local source using the official `node:20-alpine` image. No registry login required. First build: ~2–3 minutes; subsequent starts: instant.
 - **setup-local.mjs Step 5: replaced blind Docker launch with interactive start selector** — the wizard previously attempted `docker compose up -d` unconditionally, which failed with a pull error if Docker was not logged in or the image did not exist. Step 5 now:
   - Checks if Docker is available before offering it as an option
   - Offers three choices: `npm run dev` (recommended, no Docker), `docker compose` (only if Docker is detected), or `Start later`
@@ -126,7 +126,7 @@ All mentions of the original upstream project (ThePopeBot) and its contributor (
 
 #### What was added
 
-**`setup/setup.mjs` (dispatcher)** — now a thin ~50-line file that prints the GigaBot banner and routes to `setup-cloud.mjs` or `setup-local.mjs` based on the user's choice.
+**`setup/setup.mjs` (dispatcher)** — now a thin ~50-line file that prints the GigaClaw banner and routes to `setup-cloud.mjs` or `setup-local.mjs` based on the user's choice.
 
 **`setup/setup-cloud.mjs`** — the original wizard, renamed and exported as `run()`. Zero functional changes to the cloud flow.
 
@@ -139,16 +139,16 @@ All mentions of the original upstream project (ThePopeBot) and its contributor (
   - 32 GB → `llama3.1:70b-q4_0` (quantised)
   - 64 GB+ → `llama3.1:70b` (full precision)
 - Interactive model selector showing already-pulled Ollama models; custom model name entry as fallback
-- Auth secret generation and `.env` writing with `GIGABOT_MODE=local`, `LLM_PROVIDER=ollama`, `LLM_MODEL`, `OLLAMA_BASE_URL`, `NEXTAUTH_URL`
+- Auth secret generation and `.env` writing with `GIGACLAW_MODE=local`, `LLM_PROVIDER=ollama`, `LLM_MODEL`, `OLLAMA_BASE_URL`, `NEXTAUTH_URL`
 - Docker Compose startup using `docker-compose.local.yml` if present, falling back to `docker-compose.yml`
 
 **`templates/docker-compose.local.yml`** — new compose template for local mode:
-- GigaBot on port 3000, Ollama reachable via `host.docker.internal:11434`
+- GigaClaw on port 3000, Ollama reachable via `host.docker.internal:11434`
 - `extra_hosts: host.docker.internal:host-gateway` for Linux compatibility
 - Optional Ntfy push notification service behind `--profile notifications`
-- Added to `MANAGED_PATHS` — kept in sync on `npx gigabot upgrade`
+- Added to `MANAGED_PATHS` — kept in sync on `npx gigaclaw upgrade`
 
-**Mode-aware `gigabot init`** — re-running `npx gigabot init` on a local-mode project (detected via `GIGABOT_MODE=local` in `.env`) skips scaffolding of GitHub Actions workflow files, keeping the project clean.
+**Mode-aware `gigaclaw init`** — re-running `npx gigaclaw init` on a local-mode project (detected via `GIGACLAW_MODE=local` in `.env`) skips scaffolding of GitHub Actions workflow files, keeping the project clean.
 
 ---
 
@@ -156,9 +156,9 @@ All mentions of the original upstream project (ThePopeBot) and its contributor (
 
 **Released: March 2026**
 
-### Fix: GigaBot ASCII banner in setup wizard
+### Fix: GigaClaw ASCII banner in setup wizard
 
-The `npm run setup` and `npm run setup:telegram` commands now open with the correct **GigaBot** slant-font banner and the tagline `India's Autonomous AI Agent · Powered by Gignaati`.
+The `npm run setup` and `npm run setup:telegram` commands now open with the correct **GigaClaw** slant-font banner and the tagline `India's Autonomous AI Agent · Powered by Gignaati`.
 
 This change affects `setup/setup.mjs` and `setup/setup-telegram.mjs`. No functional behaviour is changed — only the visual header shown at wizard startup.
 
@@ -170,15 +170,15 @@ This change affects `setup/setup.mjs` and `setup/setup-telegram.mjs`. No functio
 
 ### Fix: middleware.js now auto-updated on upgrade
 
-The `middleware.js` file has been added to the list of **managed files** that are automatically kept in sync with the package template during `npx gigabot init` and `npx gigabot upgrade`. Previously, users who installed Giga Bot before v1.1.3 would retain an old `middleware.js` that re-exported `config` from `gigabot/middleware`, causing the Next.js / Turbopack build error:
+The `middleware.js` file has been added to the list of **managed files** that are automatically kept in sync with the package template during `npx gigaclaw init` and `npx gigaclaw upgrade`. Previously, users who installed Giga Bot before v1.1.3 would retain an old `middleware.js` that re-exported `config` from `gigaclaw/middleware`, causing the Next.js / Turbopack build error:
 
 > "The `config` export in Middleware must be a static object literal."
 
-Running `npx gigabot@latest upgrade` (or `npx gigabot init` in an existing project) will now automatically overwrite `middleware.js` with the correct template that defines `config` as a static inline literal.
+Running `npx gigaclaw@latest upgrade` (or `npx gigaclaw init` in an existing project) will now automatically overwrite `middleware.js` with the correct template that defines `config` as a static inline literal.
 
-### Fix: Remove `config` export from `gigabot/middleware`
+### Fix: Remove `config` export from `gigaclaw/middleware`
 
-The `config` export has been removed from `lib/auth/middleware.js` (the module exported as `gigabot/middleware`). This prevents the accidental re-export pattern entirely — even if a user manually writes `export { config } from 'gigabot/middleware'`, there is nothing to re-export, making the failure mode impossible.
+The `config` export has been removed from `lib/auth/middleware.js` (the module exported as `gigaclaw/middleware`). This prevents the accidental re-export pattern entirely — even if a user manually writes `export { config } from 'gigaclaw/middleware'`, there is nothing to re-export, making the failure mode impossible.
 
 ---
 
@@ -186,9 +186,9 @@ The `config` export has been removed from `lib/auth/middleware.js` (the module e
 
 ### Drizzle Kit migrations
 
-Database schema changes are now managed by Drizzle Kit instead of hand-written SQL. The old `initDatabase()` with raw `CREATE TABLE` and `ALTER TABLE` statements has been replaced by `migrate()`, which applies versioned migration files from `drizzle/`. Migrations run automatically on server startup — users upgrading gigabot get schema changes applied seamlessly without any manual steps.
+Database schema changes are now managed by Drizzle Kit instead of hand-written SQL. The old `initDatabase()` with raw `CREATE TABLE` and `ALTER TABLE` statements has been replaced by `migrate()`, which applies versioned migration files from `drizzle/`. Migrations run automatically on server startup — users upgrading gigaclaw get schema changes applied seamlessly without any manual steps.
 
-Migration files ship inside the npm package, so they resolve from `node_modules/gigabot/drizzle/` at runtime regardless of the user's working directory.
+Migration files ship inside the npm package, so they resolve from `node_modules/gigaclaw/drizzle/` at runtime regardless of the user's working directory.
 
 **For package developers:** edit `lib/db/schema.js`, then run `npm run db:generate` to create a new migration file. Never write DDL SQL by hand.
 
@@ -198,13 +198,13 @@ Migration files ship inside the npm package, so they resolve from `node_modules/
 
 **Released: February 2026**
 
-gigabot is now an installable NPM package. Instead of forking a repo and wiring everything together yourself, you run one command and get a fully configured AI agent project. This release replaces the old fork-based architecture entirely.
+gigaclaw is now an installable NPM package. Instead of forking a repo and wiring everything together yourself, you run one command and get a fully configured AI agent project. This release replaces the old fork-based architecture entirely.
 
 ---
 
 ### Install in seconds
 
-Run `npx gigabot init` and you have a working project. The interactive setup wizard walks you through API keys, GitHub secrets, and Telegram configuration — no more copying `.env.example` files and hunting for documentation. Upgrade later with a single command or let GitHub Actions handle it automatically.
+Run `npx gigaclaw init` and you have a working project. The interactive setup wizard walks you through API keys, GitHub secrets, and Telegram configuration — no more copying `.env.example` files and hunting for documentation. Upgrade later with a single command or let GitHub Actions handle it automatically.
 
 ### Web chat interface
 
@@ -232,7 +232,7 @@ API keys are hashed with SHA-256 and verified with timing-safe comparison. Creat
 
 ### Auto-upgrades
 
-When a new version of gigabot is published, a GitHub Actions workflow can open a PR to upgrade your project. Template files (workflows, Docker configs) are updated automatically. Your customizations in `config/` are never touched. You stay current without manual maintenance.
+When a new version of gigaclaw is published, a GitHub Actions workflow can open a PR to upgrade your project. Template files (workflows, Docker configs) are updated automatically. Your customizations in `config/` are never touched. You stay current without manual maintenance.
 
 ### Three ways to automate
 
@@ -258,7 +258,7 @@ All chats are stored in SQLite via Drizzle ORM. Browse history, resume old conve
 
 ### Infrastructure stays current
 
-GitHub Actions workflows, Docker configs, and other infrastructure files are managed by the package. When you upgrade gigabot, `gigabot init` scaffolds updated versions of these files. Use `gigabot diff` to see what changed and `gigabot reset` to restore any file to the package default.
+GitHub Actions workflows, Docker configs, and other infrastructure files are managed by the package. When you upgrade gigaclaw, `gigaclaw init` scaffolds updated versions of these files. Use `gigaclaw diff` to see what changed and `gigaclaw reset` to restore any file to the package default.
 
 ### Talk to your agent anywhere
 
@@ -271,11 +271,11 @@ A channel adapter pattern normalizes messages across platforms. Web chat and Tel
 This release replaces the old fork-based architecture entirely. The old `event_handler/` Express server is gone, but your configuration files carry over to the new project.
 
 **What's gone:**
-- Fork-and-modify workflow — replaced by `npx gigabot init`
+- Fork-and-modify workflow — replaced by `npx gigaclaw init`
 - Express server in `event_handler/` — replaced by Next.js route handlers in the package
 - Single `.env` API key — replaced by database-backed key management
 - File-based JSON conversation history — replaced by SQLite database
 - Anthropic-only LLM support — replaced by multi-provider architecture
 - Manual deployment — replaced by Docker Compose with Traefik
 
-**To adopt the new architecture:** Run `npx gigabot init` in a fresh directory and run the setup wizard. Then copy over your configuration files — `config/SOUL.md`, `config/JOB_PLANNING.md`, `config/JOB_AGENT.md`, `config/CRONS.json`, `config/TRIGGERS.json`, and any custom `.md` files you created. Move your `.pi/skills/` directory and any cron/trigger shell scripts as well. Your agent's personality, scheduled jobs, and skills carry over — only the surrounding infrastructure changes.
+**To adopt the new architecture:** Run `npx gigaclaw init` in a fresh directory and run the setup wizard. Then copy over your configuration files — `config/SOUL.md`, `config/JOB_PLANNING.md`, `config/JOB_AGENT.md`, `config/CRONS.json`, `config/TRIGGERS.json`, and any custom `.md` files you created. Move your `.pi/skills/` directory and any cron/trigger shell scripts as well. Your agent's personality, scheduled jobs, and skills carry over — only the surrounding infrastructure changes.

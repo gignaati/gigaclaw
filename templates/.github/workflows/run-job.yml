@@ -21,10 +21,10 @@ jobs:
             logs/*/job.config.json
           sparse-checkout-cone-mode: false
 
-      - name: Get gigabot version
+      - name: Get gigaclaw version
         id: version
         run: |
-          VERSION=$(jq -r '.packages["node_modules/gigabot"].version // "latest"' package-lock.json)
+          VERSION=$(jq -r '.packages["node_modules/gigaclaw"].version // "latest"' package-lock.json)
           echo "tag=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Read job config overrides
@@ -47,11 +47,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run gigabot Agent
+      - name: Run gigaclaw Agent
         env:
           ALL_SECRETS: ${{ toJson(secrets) }}
           JOB_IMAGE_URL: ${{ vars.JOB_IMAGE_URL }}
-          GIGABOT_VERSION: ${{ steps.version.outputs.tag }}
+          GIGACLAW_VERSION: ${{ steps.version.outputs.tag }}
           LLM_MODEL: ${{ steps.job-config.outputs.llm_model || vars.LLM_MODEL }}
           LLM_PROVIDER: ${{ steps.job-config.outputs.llm_provider || vars.LLM_PROVIDER }}
           OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
@@ -61,9 +61,9 @@ jobs:
           if [ -n "$JOB_IMAGE_URL" ]; then
             IMAGE="${JOB_IMAGE_URL}:latest"
           elif [ "$AGENT_BACKEND" = "claude-code" ]; then
-            IMAGE="gignaati/gigabot:claude-code-job-${GIGABOT_VERSION}"
+            IMAGE="gignaati/gigaclaw:claude-code-job-${GIGACLAW_VERSION}"
           else
-            IMAGE="gignaati/gigabot:pi-coding-agent-job-${GIGABOT_VERSION}"
+            IMAGE="gignaati/gigaclaw:pi-coding-agent-job-${GIGACLAW_VERSION}"
           fi
           echo "Using image: $IMAGE"
 

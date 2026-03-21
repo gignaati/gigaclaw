@@ -2,7 +2,7 @@
 # =============================================================================
 #  Giga Bot — One-Command Installer for Linux / macOS
 #  Powered by Gignaati — https://www.gignaati.com
-#  Usage: curl -fsSL https://raw.githubusercontent.com/gignaati/gigabot/main/install.sh | bash
+#  Usage: curl -fsSL https://raw.githubusercontent.com/gignaati/gigaclaw/main/install.sh | bash
 # =============================================================================
 set -e
 
@@ -90,8 +90,8 @@ if ! command -v docker &>/dev/null; then
 fi
 
 # ─── Project directory ───────────────────────────────────────────────────────
-# Supports GIGABOT_DIR env var for non-interactive / CI usage
-PROJECT_DIR="${GIGABOT_DIR:-${1:-my-gigabot}}"
+# Supports GIGACLAW_DIR env var for non-interactive / CI usage
+PROJECT_DIR="${GIGACLAW_DIR:-${1:-my-gigaclaw}}"
 
 # Resolve the absolute path so we can cd back to it after subshells
 ABS_PROJECT_DIR="$(pwd)/${PROJECT_DIR}"
@@ -104,7 +104,7 @@ mkdir -p "$PROJECT_DIR"
 # --yes suppresses the "Ok to proceed? (y)" npm prompt that hangs curl|bash.
 echo ""
 echo -e "${BOLD}Scaffolding Giga Bot project...${RESET}"
-(cd "$PROJECT_DIR" && npx --yes gigabot@latest init)
+(cd "$PROJECT_DIR" && npx --yes gigaclaw@latest init)
 
 echo ""
 echo -e "${GREEN}${BOLD}✅ Giga Bot scaffolded successfully!${RESET}"
@@ -119,12 +119,12 @@ echo ""
 # ─── Auto-launch setup wizard ────────────────────────────────────────────────
 # Change into the project directory and run setup immediately so the user
 # does not have to manually cd and run a second command.
-# Set GIGABOT_SKIP_SETUP=1 to bypass the wizard (useful in CI/CD pipelines
+# Set GIGACLAW_SKIP_SETUP=1 to bypass the wizard (useful in CI/CD pipelines
 # or automated provisioning where interactive prompts are not desired).
 cd "$ABS_PROJECT_DIR"
-if [ "${GIGABOT_SKIP_SETUP:-0}" = "1" ]; then
-  echo -e "${BOLD}${YELLOW}⚡ Skipping setup wizard (GIGABOT_SKIP_SETUP=1)${RESET}"
-  echo -e "   Run ${CYAN}npm run setup${RESET} manually to configure GigaBot."
+if [ "${GIGACLAW_SKIP_SETUP:-0}" = "1" ]; then
+  echo -e "${BOLD}${YELLOW}⚡ Skipping setup wizard (GIGACLAW_SKIP_SETUP=1)${RESET}"
+  echo -e "   Run ${CYAN}npm run setup${RESET} manually to configure GigaClaw."
 else
   echo -e "${BOLD}Launching setup wizard...${RESET}"
   echo ""
@@ -135,11 +135,11 @@ fi
 echo ""
 echo -e "${BOLD}${GREEN}✅ Setup complete!${RESET}"
 echo ""
-echo -e "${BOLD}To start GigaBot:${RESET}"
+echo -e "${BOLD}To start GigaClaw:${RESET}"
 echo -e "  ${CYAN}cd ${PROJECT_DIR} && npm run dev${RESET}   — Next.js dev server"
 echo -e "  ${CYAN}docker compose -f docker-compose.local.yml up -d${RESET}   — Docker (Local Mode)"
 echo ""
-echo -e "${BOLD}Docs:${RESET}    https://github.com/gignaati/gigabot"
+echo -e "${BOLD}Docs:${RESET}    https://github.com/gignaati/gigaclaw"
 echo -e "${BOLD}Support:${RESET} support@gignaati.com"
-echo -e "${BOLD}Website:${RESET} https://gigabot.gignaati.com"
+echo -e "${BOLD}Website:${RESET} https://gigaclaw.gignaati.com"
 echo ""

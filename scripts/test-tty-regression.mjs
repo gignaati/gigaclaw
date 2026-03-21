@@ -277,6 +277,7 @@ test('install.ps1 auto-launches npm run setup after scaffolding', () => {
 test('install.sh uses npx --yes to suppress "Ok to proceed?" prompt', () => {
   const installSh = fs.readFileSync(path.join(ROOT, 'install.sh'), 'utf8');
   assert(
+    installSh.includes('npx --yes gigaclaw@latest') || installSh.includes('npx -y gigaclaw@latest') ||
     installSh.includes('npx --yes gigabot@latest') || installSh.includes('npx -y gigabot@latest'),
     'install.sh is missing --yes on npx call — the "Ok to proceed? (y)" prompt will hang curl|bash installs'
   );
@@ -426,12 +427,13 @@ test('dropdown-menu.js compiled file uses span role=button in default trigger pa
 test('install.sh supports GIGABOT_SKIP_SETUP=1 bypass for CI/CD pipelines', () => {
   const installSh = fs.readFileSync(path.join(ROOT, 'install.sh'), 'utf8');
   assert(
-    installSh.includes('GIGABOT_SKIP_SETUP'),
-    'install.sh is missing the GIGABOT_SKIP_SETUP=1 bypass'
+    installSh.includes('GIGABOT_SKIP_SETUP') || installSh.includes('GIGACLAW_SKIP_SETUP'),
+    'install.sh is missing the GIGACLAW_SKIP_SETUP=1 bypass'
   );
   assert(
-    installSh.includes('"${GIGABOT_SKIP_SETUP:-0}" = "1"'),
-    'install.sh GIGABOT_SKIP_SETUP check must use ${GIGABOT_SKIP_SETUP:-0} with default value'
+    installSh.includes('"${GIGABOT_SKIP_SETUP:-0}" = "1"') ||
+    installSh.includes('"${GIGACLAW_SKIP_SETUP:-0}" = "1"'),
+    'install.sh GIGACLAW_SKIP_SETUP check must use ${GIGACLAW_SKIP_SETUP:-0} with default value'
   );
 });
 
@@ -439,12 +441,13 @@ test('install.sh supports GIGABOT_SKIP_SETUP=1 bypass for CI/CD pipelines', () =
 test('install.ps1 supports GIGABOT_SKIP_SETUP=1 bypass for CI/CD pipelines', () => {
   const installPs1 = fs.readFileSync(path.join(ROOT, 'install.ps1'), 'utf8');
   assert(
-    installPs1.includes('GIGABOT_SKIP_SETUP'),
-    'install.ps1 is missing the GIGABOT_SKIP_SETUP bypass'
+    installPs1.includes('GIGABOT_SKIP_SETUP') || installPs1.includes('GIGACLAW_SKIP_SETUP'),
+    'install.ps1 is missing the GIGACLAW_SKIP_SETUP bypass'
   );
   assert(
-    installPs1.includes("$env:GIGABOT_SKIP_SETUP -eq '1'"),
-    "install.ps1 GIGABOT_SKIP_SETUP check must use $env:GIGABOT_SKIP_SETUP -eq '1'"
+    installPs1.includes("$env:GIGABOT_SKIP_SETUP -eq '1'") ||
+    installPs1.includes("$env:GIGACLAW_SKIP_SETUP -eq '1'"),
+    "install.ps1 GIGACLAW_SKIP_SETUP check must use \$env:GIGACLAW_SKIP_SETUP -eq '1'"
   );
 });
 
@@ -479,6 +482,68 @@ test('templates/public/favicon.ico exists to prevent 404 on every page load', ()
     stat.size > 50,
     'templates/public/favicon.ico is too small to be a valid ICO file (expected > 50 bytes)'
   );
+});
+
+// ─── Test 31: Gigaclaw rename — no stale gigabot references in package.json or README ───
+test('Gigabot → Gigaclaw rename: package.json name is gigaclaw and README has no stale gigabot refs', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  assert(
+    pkg.name === 'gigaclaw',
+    `package.json name should be 'gigaclaw', got '${pkg.name}'`
+  );
+  assert(
+    !pkg.description?.toLowerCase().includes('gigabot'),
+    `package.json description still contains 'gigabot': ${pkg.description}`
+  );
+  const readme = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
+  const staleCount = (readme.match(/\bgigabot\b/gi) || []).length;
+  assert(
+    staleCount === 0,
+    `README.md still contains ${staleCount} stale 'gigabot' reference(s)`
+  );
+});
+
+// ─── Test 32: exportChat and exportAllChats actions exist in lib/chat/actions.js ───────
+test('exportChat and exportAllChats are exported from lib/chat/actions.js with md/txt/json support', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib', 'chat', 'actions.js'), 'utf8');
+  assert(src.includes('async function exportChat'), 'exportChat function is missing from lib/chat/actions.js');
+  assert(src.includes('async function exportAllChats'), 'exportAllChats function is missing from lib/chat/actions.js');
+  assert(src.includes("'md'") || src.includes('"md"'), 'exportChat must handle md format');
+  assert(src.includes("'txt'") || src.includes('"txt"'), 'exportChat must handle txt format');
+  assert(src.includes("'json'") || src.includes('"json"'), 'exportChat must handle json format');
+});
+
+// ─── Test 33: ExportIcon exists in icons.jsx and compiled icons.js ───────────────────
+test('ExportIcon is defined in icons.jsx and present in compiled icons.js', () => {
+  const jsxSrc = fs.readFileSync(path.join(ROOT, 'lib', 'chat', 'components', 'icons.jsx'), 'utf8');
+  assert(jsxSrc.includes('export function ExportIcon'), 'ExportIcon is missing from icons.jsx');
+  const jsPath = path.join(ROOT, 'lib', 'chat', 'components', 'icons.js');
+  if (fs.existsSync(jsPath)) {
+    const compiled = fs.readFileSync(jsPath, 'utf8');
+    assert(compiled.includes('ExportIcon'), 'ExportIcon missing from compiled icons.js — run npm run build');
+  }
+});
+
+// ─── Test 34: DropdownMenuSub components exist in dropdown-menu.jsx and compiled .js ───
+test('DropdownMenuSub/SubTrigger/SubContent defined in dropdown-menu.jsx and compiled .js', () => {
+  const jsxSrc = fs.readFileSync(path.join(ROOT, 'lib', 'chat', 'components', 'ui', 'dropdown-menu.jsx'), 'utf8');
+  assert(jsxSrc.includes('export function DropdownMenuSub('), 'DropdownMenuSub missing from dropdown-menu.jsx');
+  assert(jsxSrc.includes('export function DropdownMenuSubTrigger('), 'DropdownMenuSubTrigger missing from dropdown-menu.jsx');
+  assert(jsxSrc.includes('export function DropdownMenuSubContent('), 'DropdownMenuSubContent missing from dropdown-menu.jsx');
+  const jsPath = path.join(ROOT, 'lib', 'chat', 'components', 'ui', 'dropdown-menu.js');
+  if (fs.existsSync(jsPath)) {
+    const compiled = fs.readFileSync(jsPath, 'utf8');
+    assert(compiled.includes('DropdownMenuSub'), 'DropdownMenuSub missing from compiled dropdown-menu.js — run npm run build');
+  }
+});
+
+// ─── Test 35: chat-header.jsx has Export submenu with all 3 format options ────────────
+test('chat-header.jsx Export submenu contains md, txt, and json format options', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib', 'chat', 'components', 'chat-header.jsx'), 'utf8');
+  assert(src.includes('DropdownMenuSub'), 'chat-header.jsx is missing DropdownMenuSub for export');
+  assert(src.includes("handleExport('md')"), 'chat-header.jsx is missing md export option');
+  assert(src.includes("handleExport('txt')"), 'chat-header.jsx is missing txt export option');
+  assert(src.includes("handleExport('json')"), 'chat-header.jsx is missing json export option');
 });
 
 // ─── Run all tests and print final summary ───────────────────────────────────

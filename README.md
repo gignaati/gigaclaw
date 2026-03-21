@@ -4,15 +4,15 @@
 
 ### Autonomous AI Agent Platform — Powered by Gignaati
 
-[![npm version](https://img.shields.io/npm/v/gigabot?color=000&labelColor=000&logo=npm&label=gigabot)](https://www.npmjs.com/package/gigabot)
+[![npm version](https://img.shields.io/npm/v/gigaclaw?color=000&labelColor=000&logo=npm&label=gigaclaw)](https://www.npmjs.com/package/gigaclaw)
 [![License: MIT](https://img.shields.io/badge/License-MIT-000?labelColor=000)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/gignaati/gigabot?color=000&labelColor=000)](https://github.com/gignaati/gigabot/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/gignaati/gigaclaw?color=000&labelColor=000)](https://github.com/gignaati/gigaclaw/stargazers)
 [![Made in India](https://img.shields.io/badge/Made%20in-India-FF9933?labelColor=000)](https://www.gignaati.com)
 
 **Build, deploy, and run autonomous AI agents 24/7.**  
 India-first. Edge-native. Zero vendor lock-in.
 
-[Website](https://www.gignaati.com) · [Documentation](https://github.com/gignaati/gigabot/wiki) · [Issues](https://github.com/gignaati/gigabot/issues) · [Discussions](https://github.com/gignaati/gigabot/discussions)
+[Website](https://www.gignaati.com) · [Documentation](https://github.com/gignaati/gigaclaw/wiki) · [Issues](https://github.com/gignaati/gigaclaw/issues) · [Discussions](https://github.com/gignaati/gigaclaw/discussions)
 
 </div>
 
@@ -35,19 +35,19 @@ Giga Bot is the only autonomous agent platform with **native PragatiGPT support*
 
 ### Linux / macOS
 ```bash
-curl -fsSL https://raw.githubusercontent.com/gignaati/gigabot/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/gignaati/gigaclaw/main/install.sh | bash
 ```
 
 ### Windows (PowerShell)
 ```powershell
-irm https://raw.githubusercontent.com/gignaati/gigabot/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/gignaati/gigaclaw/main/install.ps1 | iex
 ```
 
 ### All Platforms (npm / npx)
 ```bash
 # Create a new Giga Bot project
-mkdir my-gigabot && cd my-gigabot
-npx gigabot@latest init
+mkdir my-gigaclaw && cd my-gigaclaw
+npx gigaclaw@latest init
 
 # Then run the interactive setup wizard
 npm run setup
@@ -59,12 +59,12 @@ npm run setup
 
 ## Quick Start (5 Steps)
 
-**Step 1 — Create a new GitHub repository** for your agent (e.g., `my-gigabot`).
+**Step 1 — Create a new GitHub repository** for your agent (e.g., `my-gigaclaw`).
 
 **Step 2 — Install Giga Bot** into a local folder with the same name:
 ```bash
-mkdir my-gigabot && cd my-gigabot
-npx gigabot@latest init
+mkdir my-gigaclaw && cd my-gigaclaw
+npx gigaclaw@latest init
 npm install
 ```
 
@@ -146,16 +146,16 @@ LLM_PROVIDER=custom       # Any OpenAI-compatible API
 ## CLI Commands
 
 ```bash
-npx gigabot init                              # Scaffold or update project files
-npx gigabot setup                            # Run interactive setup wizard
-npx gigabot setup-telegram                   # Configure Telegram bot
-npx gigabot upgrade [@beta|version]          # Upgrade to latest version
-npx gigabot reset-auth                       # Regenerate AUTH_SECRET
-npx gigabot reset [file]                     # Restore a template file
-npx gigabot diff [file]                      # Show differences vs. templates
-npx gigabot set-agent-secret <KEY> [VALUE]   # Set GitHub secret (AGENT_ prefix)
-npx gigabot set-agent-llm-secret <KEY> [VALUE] # Set LLM secret (AGENT_LLM_ prefix)
-npx gigabot set-var <KEY> [VALUE]            # Set GitHub repository variable
+npx gigaclaw init                              # Scaffold or update project files
+npx gigaclaw setup                            # Run interactive setup wizard
+npx gigaclaw setup-telegram                   # Configure Telegram bot
+npx gigaclaw upgrade [@beta|version]          # Upgrade to latest version
+npx gigaclaw reset-auth                       # Regenerate AUTH_SECRET
+npx gigaclaw reset [file]                     # Restore a template file
+npx gigaclaw diff [file]                      # Show differences vs. templates
+npx gigaclaw set-agent-secret <KEY> [VALUE]   # Set GitHub secret (AGENT_ prefix)
+npx gigaclaw set-agent-llm-secret <KEY> [VALUE] # Set LLM secret (AGENT_LLM_ prefix)
+npx gigaclaw set-var <KEY> [VALUE]            # Set GitHub repository variable
 ```
 
 ---
@@ -178,9 +178,9 @@ These files in `config/` define your agent's personality and behavior. They are 
 ## Updating
 
 ```bash
-npx gigabot upgrade          # Latest stable
-npx gigabot upgrade @beta    # Latest beta
-npx gigabot upgrade 1.2.72   # Specific version
+npx gigaclaw upgrade          # Latest stable
+npx gigaclaw upgrade @beta    # Latest beta
+npx gigaclaw upgrade 1.2.72   # Specific version
 ```
 
 ---
@@ -199,7 +199,7 @@ Giga Bot runs on any Linux server with Docker. Recommended:
 For local development, use [ngrok](https://ngrok.com) to expose your machine:
 ```bash
 ngrok http 80
-# Then update APP_URL: npx gigabot set-var APP_URL https://your-url.ngrok.io
+# Then update APP_URL: npx gigaclaw set-var APP_URL https://your-url.ngrok.io
 ```
 
 ---
@@ -221,8 +221,8 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before
 
 ## Support
 
-- **GitHub Issues:** [github.com/gignaati/gigabot/issues](https://github.com/gignaati/gigabot/issues)
-- **Discussions:** [github.com/gignaati/gigabot/discussions](https://github.com/gignaati/gigabot/discussions)
+- **GitHub Issues:** [github.com/gignaati/gigaclaw/issues](https://github.com/gignaati/gigaclaw/issues)
+- **Discussions:** [github.com/gignaati/gigaclaw/discussions](https://github.com/gignaati/gigaclaw/discussions)
 - **Email:** support@gignaati.com
 - **Website:** [www.gignaati.com](https://www.gignaati.com)
 

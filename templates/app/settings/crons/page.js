@@ -1,4 +1,4 @@
-import { CronsPage } from 'gigabot/chat';
+import { CronsPage } from 'gigaclaw/chat';
 
 export default function SettingsCronsRoute() {
   return <CronsPage />;

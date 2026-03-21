@@ -164,7 +164,7 @@ jobs:
           file: ${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: gignaati/gigabot:${{ matrix.image }}-${{ needs.publish-staging.outputs.version }}
+          tags: gignaati/gigaclaw:${{ matrix.image }}-${{ needs.publish-staging.outputs.version }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
 
@@ -186,9 +186,9 @@ jobs:
         run: |
           VERSION="${{ needs.publish-staging.outputs.version }}"
           CHANNEL="${{ needs.publish-staging.outputs.channel }}"
-          echo "Promoting gigabot@$VERSION to $CHANNEL"
-          npm dist-tag add "gigabot@$VERSION" "$CHANNEL"
-          npm dist-tag rm gigabot staging
+          echo "Promoting gigaclaw@$VERSION to $CHANNEL"
+          npm dist-tag add "gigaclaw@$VERSION" "$CHANNEL"
+          npm dist-tag rm gigaclaw staging
 
   # ─── Job 4: Generate structured release notes ────────────────────────────
   #
@@ -311,8 +311,8 @@ jobs:
           IS_PRE: ${{ needs.publish-staging.outputs.is-prerelease }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name  "gigabot-release-bot"
-          git config user.email "gigabot@users.noreply.github.com"
+          git config user.name  "gigaclaw-release-bot"
+          git config user.email "gigaclaw@users.noreply.github.com"
           git add CHANGELOG.md
           git diff --cached --quiet && echo "No changes to commit" && exit 0
 
@@ -352,6 +352,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION="${{ needs.publish-staging.outputs.version }}"
-          echo "Docker builds failed — cleaning up gigabot@$VERSION"
-          npm dist-tag rm gigabot staging || true
-          npm unpublish "gigabot@$VERSION" || true
+          echo "Docker builds failed — cleaning up gigaclaw@$VERSION"
+          npm dist-tag rm gigaclaw staging || true
+          npm unpublish "gigaclaw@$VERSION" || true

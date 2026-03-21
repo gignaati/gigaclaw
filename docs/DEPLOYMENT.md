@@ -9,7 +9,7 @@ npm run dev    # Next.js dev server
 ## Production (Docker Compose)
 
 ```bash
-npx gigabot init   # Scaffold project
+npx gigaclaw init   # Scaffold project
 npm run setup          # Configure .env, GitHub secrets, Telegram
 npm run build          # Next.js build → generates .next/
 docker-compose up      # Start Traefik + event handler + runner
@@ -31,9 +31,9 @@ The bind mount (`.:/app`) overlays the entire `/app` directory with the host's p
 
 So the host's node_modules (compiled for macOS) are never used inside the container. The container always uses its own Linux-compiled modules.
 
-### Why gigabot is installed twice (host and container)
+### Why gigaclaw is installed twice (host and container)
 
-The user runs `npm install` on the host (macOS) to get gigabot and all dependencies. This is needed because `next build` must resolve all `gigabot/*` imports to compile the app — without gigabot in local node_modules, the build fails immediately on unresolved imports. The `.next/` output is just bundled JavaScript — it's platform-independent, so building on macOS and running on Linux is fine. But Next.js still needs `node_modules` at **runtime** for native modules (like `better-sqlite3`) and server-side requires that aren't bundled. Those native modules must be compiled for Linux, which is why the Docker image has its own separate `npm install`. Different purposes, different platforms, both necessary.
+The user runs `npm install` on the host (macOS) to get gigaclaw and all dependencies. This is needed because `next build` must resolve all `gigaclaw/*` imports to compile the app — without gigaclaw in local node_modules, the build fails immediately on unresolved imports. The `.next/` output is just bundled JavaScript — it's platform-independent, so building on macOS and running on Linux is fine. But Next.js still needs `node_modules` at **runtime** for native modules (like `better-sqlite3`) and server-side requires that aren't bundled. Those native modules must be compiled for Linux, which is why the Docker image has its own separate `npm install`. Different purposes, different platforms, both necessary.
 
 ### The build must happen before the container starts
 
@@ -44,7 +44,7 @@ Before running `docker-compose up`, the user must run `npm run build` on the hos
 | Service | Image | Purpose |
 |---------|-------|---------|
 | **traefik** | `traefik:v3` | Reverse proxy with automatic HTTPS (Let's Encrypt) |
-| **event-handler** | `gignaati/gigabot:event-handler-${GIGABOT_VERSION}` | Node.js runtime + PM2, serves the bind-mounted Next.js app on port 80 |
+| **event-handler** | `gignaati/gigaclaw:event-handler-${GIGACLAW_VERSION}` | Node.js runtime + PM2, serves the bind-mounted Next.js app on port 80 |
 | **runner** | `myoung34/github-runner:latest` | Self-hosted GitHub Actions runner for executing jobs |
 
 The runner registers as a self-hosted GitHub Actions runner, enabling `run-job.yml` to spin up Docker agent containers directly on your server. It also has a read-only volume mount (`.:/project:ro`) so `upgrade-event-handler.yml` can run `docker compose` commands against the project's compose file.
@@ -70,7 +70,7 @@ SSH into your server and scaffold the project:
 
 ```bash
 mkdir my-agent && cd my-agent
-npx gigabot@latest init
+npx gigaclaw@latest init
 npm run setup
 ```
 

@@ -1,1 +1,1 @@
-export { POST } from 'gigabot/chat/api';
+export { POST } from 'gigaclaw/chat/api';

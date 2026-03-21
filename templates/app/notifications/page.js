@@ -1,5 +1,5 @@
-import { auth } from 'gigabot/auth';
-import { NotificationsPage } from 'gigabot/chat';
+import { auth } from 'gigaclaw/auth';
+import { NotificationsPage } from 'gigaclaw/chat';
 
 export default async function NotificationsRoute() {
   const session = await auth();

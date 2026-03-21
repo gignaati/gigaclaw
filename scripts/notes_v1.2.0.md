@@ -1,4 +1,4 @@
-Giga Bot v1.2.0 introduces **Local Mode** — a fully offline operating mode that lets you run GigaBot on your own machine without any internet connection, GitHub account, ngrok tunnel, or Telegram bot.
+Giga Bot v1.2.0 introduces **Local Mode** — a fully offline operating mode that lets you run GigaClaw on your own machine without any internet connection, GitHub account, ngrok tunnel, or Telegram bot.
 
 ---
 
@@ -9,7 +9,7 @@ Giga Bot v1.2.0 introduces **Local Mode** — a fully offline operating mode tha
 `npm run setup` now opens with a **mode selector** as the very first prompt:
 
 ```
-◆  How do you want to run GigaBot?
+◆  How do you want to run GigaClaw?
 │  ● Cloud Mode   (GitHub + ngrok + Telegram — full features, internet required)
 │  ○ Local Mode   (Ollama only — 100% offline, no Telegram or GitHub needed)
 ```
@@ -62,7 +62,7 @@ If you already have models pulled, they appear in a selector. You can also type 
 **Step 4 — Configuration**
 
 Writes `.env` with:
-- `GIGABOT_MODE=local`
+- `GIGACLAW_MODE=local`
 - `LLM_PROVIDER=ollama`
 - `LLM_MODEL=<your chosen model>`
 - `OLLAMA_BASE_URL=http://localhost:11434`
@@ -73,14 +73,14 @@ No GitHub PAT, no ngrok token, no Telegram bot token required.
 
 **Step 5 — Start**
 
-Launches GigaBot using `docker-compose.local.yml` (or falls back to `docker-compose.yml`). Access the web interface at `http://localhost:3000`.
+Launches GigaClaw using `docker-compose.local.yml` (or falls back to `docker-compose.yml`). Access the web interface at `http://localhost:3000`.
 
 ---
 
 ### New file: `docker-compose.local.yml`
 
 A stripped-down compose file for offline use:
-- GigaBot on port 3000, Ollama reachable via `host.docker.internal:11434`
+- GigaClaw on port 3000, Ollama reachable via `host.docker.internal:11434`
 - `extra_hosts: host.docker.internal:host-gateway` for Linux GPU passthrough compatibility
 - Optional **Ntfy** push notification service (LAN-only, no internet) behind `--profile notifications`
 
@@ -91,11 +91,11 @@ docker compose -f docker-compose.local.yml --profile notifications up -d
 
 ---
 
-### Mode-aware `gigabot init`
+### Mode-aware `gigaclaw init`
 
-Re-running `npx gigabot init` on a local-mode project (detected via `GIGABOT_MODE=local` in `.env`) now skips scaffolding GitHub Actions workflow files — keeping the project directory clean and free of cloud-only configuration that would never be used.
+Re-running `npx gigaclaw init` on a local-mode project (detected via `GIGACLAW_MODE=local` in `.env`) now skips scaffolding GitHub Actions workflow files — keeping the project directory clean and free of cloud-only configuration that would never be used.
 
-`docker-compose.local.yml` is added to `MANAGED_PATHS` and will be kept in sync on every `npx gigabot upgrade`.
+`docker-compose.local.yml` is added to `MANAGED_PATHS` and will be kept in sync on every `npx gigaclaw upgrade`.
 
 ---
 
@@ -114,13 +114,13 @@ Re-running `npx gigabot init` on a local-mode project (detected via `GIGABOT_MOD
 ## Upgrade
 
 ```bash
-npx gigabot@latest upgrade
+npx gigaclaw@latest upgrade
 ```
 
 Existing cloud-mode projects are unaffected — the cloud wizard is identical to previous versions.
 
 ---
 
-**Full Changelog**: https://github.com/gignaati/gigabot/compare/v1.1.5...v1.2.0
+**Full Changelog**: https://github.com/gignaati/gigaclaw/compare/v1.1.5...v1.2.0
 
-**npm**: `npm install gigabot@1.2.0` · **Quick start**: `npx gigabot init`
+**npm**: `npm install gigaclaw@1.2.0` · **Quick start**: `npx gigaclaw init`

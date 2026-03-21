@@ -166,3 +166,50 @@ export function DropdownMenuLabel({ children, className }) {
 export function DropdownMenuGroup({ children }) {
   return <div>{children}</div>;
 }
+
+// ─── Submenu ─────────────────────────────────────────────────────────────────
+const SubContext = createContext({ open: false, setOpen: () => {} });
+
+export function DropdownMenuSub({ children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <SubContext.Provider value={{ open, setOpen }}>
+      <div className="relative">{children}</div>
+    </SubContext.Provider>
+  );
+}
+
+export function DropdownMenuSubTrigger({ children, className }) {
+  const { open, setOpen } = useContext(SubContext);
+  return (
+    <div
+      role="menuitem"
+      aria-haspopup="menu"
+      aria-expanded={open}
+      className={cn(
+        'relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-background focus:bg-background justify-between',
+        className
+      )}
+      onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+    >
+      <span className="flex items-center gap-2">{children}</span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+    </div>
+  );
+}
+
+export function DropdownMenuSubContent({ children, className }) {
+  const { open } = useContext(SubContext);
+  if (!open) return null;
+  return (
+    <div
+      role="menu"
+      className={cn(
+        'absolute left-full top-0 z-50 min-w-[8rem] overflow-hidden rounded-md border border-border bg-background/80 backdrop-blur-sm p-1 text-foreground shadow-lg ml-1',
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}

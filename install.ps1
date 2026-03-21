@@ -3,17 +3,17 @@
 #  Powered by Gignaati — https://www.gignaati.com
 #
 #  Usage (run from an elevated or standard PowerShell prompt):
-#    irm https://raw.githubusercontent.com/gignaati/gigabot/main/install.ps1 | iex
+#    irm https://raw.githubusercontent.com/gignaati/gigaclaw/main/install.ps1 | iex
 #
 #  Or with a custom project directory name:
-#    $env:GIGABOT_DIR="my-project"; irm .../install.ps1 | iex
+#    $env:GIGACLAW_DIR="my-project"; irm .../install.ps1 | iex
 #
 #  What this script does:
 #    1. Self-bypasses execution policy for the current process (irm|iex users)
 #    2. Augments PATH for nvm-windows, fnm, Scoop, Chocolatey, Volta, and
 #       the default Node.js MSI install location
 #    3. Checks Node.js (18+), npm, Git (optional), Docker (optional)
-#    4. Scaffolds the project with: npx gigabot@latest init
+#    4. Scaffolds the project with: npx gigaclaw@latest init
 #    5. Auto-launches the interactive setup wizard: npm run setup
 #    6. Prints next-steps instructions
 # =============================================================================
@@ -101,7 +101,7 @@ if (-not $nodeCmd) {
     Write-Host "    fnm                : winget install Schniz.fnm" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "  After installing Node.js, open a new PowerShell window and re-run:" -ForegroundColor White
-    Write-Host "    irm https://raw.githubusercontent.com/gignaati/gigabot/main/install.ps1 | iex" -ForegroundColor Cyan
+    Write-Host "    irm https://raw.githubusercontent.com/gignaati/gigaclaw/main/install.ps1 | iex" -ForegroundColor Cyan
     Write-Host ""
     exit 1
 }
@@ -152,13 +152,13 @@ if ($dockerCmd) {
 }
 
 # ─── Project directory ───────────────────────────────────────────────────────
-# Precedence: $env:GIGABOT_DIR > first positional arg > default "my-gigabot"
-$ProjectDir = if ($env:GIGABOT_DIR) {
-    $env:GIGABOT_DIR
+# Precedence: $env:GIGACLAW_DIR > first positional arg > default "my-gigaclaw"
+$ProjectDir = if ($env:GIGACLAW_DIR) {
+    $env:GIGACLAW_DIR
 } elseif ($args.Count -gt 0) {
     $args[0]
 } else {
-    "my-gigabot"
+    "my-gigaclaw"
 }
 
 $AbsProjectDir = Join-Path (Get-Location).Path $ProjectDir
@@ -174,9 +174,9 @@ Push-Location $AbsProjectDir
 try {
     # --% passes --yes literally to npx, suppressing the "Ok to proceed? (y)" prompt
     # that would hang non-interactive / piped invocations.
-    & npx --yes gigabot@latest init
+    & npx --yes gigaclaw@latest init
     if ($LASTEXITCODE -ne 0) {
-        Write-Fail "npx gigabot@latest init failed (exit code $LASTEXITCODE)."
+        Write-Fail "npx gigaclaw@latest init failed (exit code $LASTEXITCODE)."
         Pop-Location
         exit $LASTEXITCODE
     }
@@ -206,10 +206,10 @@ Write-Host ""
 # ─── Auto-launch setup wizard ────────────────────────────────────────────────
 # Mirrors install.sh behaviour: cd into the project and run npm run setup
 # immediately so the user never has to type a second command.
-# Set $env:GIGABOT_SKIP_SETUP = '1' to bypass the wizard (useful in CI/CD
+# Set $env:GIGACLAW_SKIP_SETUP = '1' to bypass the wizard (useful in CI/CD
 # pipelines or automated provisioning where interactive prompts are not desired).
-if ($env:GIGABOT_SKIP_SETUP -eq '1') {
-    Write-Host "⚡ Skipping setup wizard (GIGABOT_SKIP_SETUP=1)" -ForegroundColor Yellow
+if ($env:GIGACLAW_SKIP_SETUP -eq '1') {
+    Write-Host "⚡ Skipping setup wizard (GIGACLAW_SKIP_SETUP=1)" -ForegroundColor Yellow
     Write-Host "  Run 'npm run setup' manually to configure Giga Bot." -ForegroundColor DarkGray
 } else {
     Write-Step "Launching setup wizard..."
@@ -240,7 +240,7 @@ Write-Host ""
 Write-Host "    docker compose -f docker-compose.local.yml up -d" -ForegroundColor Cyan
 Write-Host "      — Docker (Local Mode, Ollama required)" -ForegroundColor DarkGray
 Write-Host ""
-Write-Host "  Docs   : https://github.com/gignaati/gigabot" -ForegroundColor White
+Write-Host "  Docs   : https://github.com/gignaati/gigaclaw" -ForegroundColor White
 Write-Host "  Support: support@gignaati.com" -ForegroundColor White
-Write-Host "  Website: https://gigabot.gignaati.com" -ForegroundColor White
+Write-Host "  Website: https://gigaclaw.gignaati.com" -ForegroundColor White
 Write-Host ""

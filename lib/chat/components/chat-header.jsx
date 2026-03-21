@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { SidebarTrigger } from './ui/sidebar.js';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from './ui/dropdown-menu.js';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from './ui/dropdown-menu.js';
 import { ConfirmDialog } from './ui/confirm-dialog.js';
 import { RenameDialog } from './ui/rename-dialog.jsx';
-import { ChevronDownIcon, StarIcon, StarFilledIcon, PencilIcon, TrashIcon } from './icons.js';
-import { getChatMeta, getChatMetaByWorkspace, renameChat, deleteChat, starChat } from '../actions.js';
+import { ChevronDownIcon, StarIcon, StarFilledIcon, PencilIcon, TrashIcon, ExportIcon } from './icons.js';
+import { getChatMeta, getChatMetaByWorkspace, renameChat, deleteChat, starChat, exportChat } from '../actions.js';
 import { useChatNav } from './chat-nav-context.js';
 
 export function ChatHeader({ chatId: chatIdProp, workspaceId }) {
@@ -17,6 +17,7 @@ export function ChatHeader({ chatId: chatIdProp, workspaceId }) {
   const [editValue, setEditValue] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const inputRef = useRef(null);
   const nav = useChatNav();
 
@@ -96,6 +97,27 @@ export function ChatHeader({ chatId: chatIdProp, workspaceId }) {
     window.dispatchEvent(new Event('chatsupdated'));
   };
 
+  const handleExport = async (format) => {
+    if (!chatId || isExporting) return;
+    setIsExporting(true);
+    try {
+      const { filename, content, mimeType } = await exportChat(chatId, format);
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export failed:', err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleDelete = async () => {
     setShowDeleteConfirm(false);
     await deleteChat(chatId);
@@ -147,6 +169,25 @@ export function ChatHeader({ chatId: chatIdProp, workspaceId }) {
                   <PencilIcon size={14} />
                   <span>Rename</span>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <ExportIcon size={14} />
+                    <span>{isExporting ? 'Exporting…' : 'Export'}</span>
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem onClick={() => handleExport('md')}>
+                      <span>Markdown (.md)</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('txt')}>
+                      <span>Plain Text (.txt)</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('json')}>
+                      <span>JSON (.json)</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setShowDeleteConfirm(true)}>
                   <TrashIcon size={14} />
                   <span className="text-destructive">Delete</span>

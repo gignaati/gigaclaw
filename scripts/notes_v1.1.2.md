@@ -1,4 +1,4 @@
-Giga Bot v1.1.2 is a branding cleanup and stability release. It completes GigaBot branding across all compiled components, corrects the support URL to `gigabot.gignaati.com`, and fixes a React hydration error on the Swarm page caused by reading `localStorage` during SSR.
+Giga Bot v1.1.2 is a branding cleanup and stability release. It completes GigaClaw branding across all compiled components, corrects the support URL to `gigaclaw.gignaati.com`, and fixes a React hydration error on the Swarm page caused by reading `localStorage` during SSR.
 
 ---
 
@@ -6,12 +6,12 @@ Giga Bot v1.1.2 is a branding cleanup and stability release. It completes GigaBo
 
 ### 🐛 Bug Fixes
 
-- Completed GigaBot branding across all compiled components including `app-sidebar.js` — all legacy identifiers replaced with GigaBot
-- Corrected support URL from `www.gignaati.com` to `https://gigabot.gignaati.com` in `app-sidebar.jsx` and compiled output
+- Completed GigaClaw branding across all compiled components including `app-sidebar.js` — all legacy identifiers replaced with GigaClaw
+- Corrected support URL from `www.gignaati.com` to `https://gigaclaw.gignaati.com` in `app-sidebar.jsx` and compiled output
 - Fixed Swarm page React hydration error caused by reading `localStorage` during SSR — replaced direct access with an SSR-safe `useEffect` pattern
 
 ---
 
-**Full Changelog**: https://github.com/gignaati/gigabot/compare/v1.1.1...v1.1.2
+**Full Changelog**: https://github.com/gignaati/gigaclaw/compare/v1.1.1...v1.1.2
 
-**npm**: `npm install gigabot@1.1.2` · **Upgrade**: `npx gigabot@latest upgrade`
+**npm**: `npm install gigaclaw@1.1.2` · **Upgrade**: `npx gigaclaw@latest upgrade`

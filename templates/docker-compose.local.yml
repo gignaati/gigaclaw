@@ -1,5 +1,5 @@
-# GigaBot — Local Mode (docker-compose.local.yml)
-# Runs GigaBot 100% offline using Ollama for LLM inference.
+# GigaClaw — Local Mode (docker-compose.local.yml)
+# Runs GigaClaw 100% offline using Ollama for LLM inference.
 # No GitHub, no ngrok, no Telegram required.
 #
 # Prerequisites:
@@ -7,20 +7,20 @@
 #   2. Pull a model:   ollama pull llama3.1:8b
 #   3. Start Ollama:   ollama serve
 #
-# Start GigaBot:
+# Start GigaClaw:
 #   docker compose -f docker-compose.local.yml up -d
 #
 # Access the web interface at: http://localhost:3000
 #
 # ─── NOTE ────────────────────────────────────────────────────────────────────
-# This compose file builds GigaBot from your local source code using the
+# This compose file builds GigaClaw from your local source code using the
 # official Node.js image. No private Docker registry or login is required.
 # First build: ~2-3 minutes. Subsequent starts: instant.
 # ─────────────────────────────────────────────────────────────────────────────
 
 services:
-  gigabot:
-    container_name: gigabot-local
+  gigaclaw:
+    container_name: gigaclaw-local
     # Build from local source — no private registry or docker login required
     build:
       context: .
@@ -40,7 +40,7 @@ services:
       - .:/app
       - /app/node_modules
       # Persist the SQLite database across container restarts
-      - gigabot-data:/app/data
+      - gigaclaw-data:/app/data
     environment:
       # Ollama runs on the host machine — Docker reaches it via host.docker.internal
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
@@ -63,7 +63,7 @@ services:
   # Enable with: docker compose -f docker-compose.local.yml --profile notifications up -d
   ntfy:
     image: binwiederhier/ntfy
-    container_name: gigabot-ntfy
+    container_name: gigaclaw-ntfy
     ports:
       - "8080:80"
     command: serve --base-url http://localhost:8080
@@ -74,5 +74,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  gigabot-data:
+  gigaclaw-data:
   ntfy-data:

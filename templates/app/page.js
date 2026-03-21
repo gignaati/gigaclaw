@@ -1,5 +1,5 @@
-import { auth } from 'gigabot/auth';
-import { ChatPage } from 'gigabot/chat';
+import { auth } from 'gigaclaw/auth';
+import { ChatPage } from 'gigaclaw/chat';
 
 export default async function Home() {
   const session = await auth();

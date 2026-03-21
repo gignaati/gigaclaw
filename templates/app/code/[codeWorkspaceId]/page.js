@@ -1,5 +1,5 @@
-import { auth } from 'gigabot/auth';
-import { CodePage } from 'gigabot/code';
+import { auth } from 'gigaclaw/auth';
+import { CodePage } from 'gigaclaw/code';
 
 export default async function CodeRoute({ params }) {
   const session = await auth();

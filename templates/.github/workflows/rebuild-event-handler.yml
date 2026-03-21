@@ -16,7 +16,7 @@ jobs:
       - name: Pull latest and detect version change
         id: pull
         run: |
-          docker exec gigabot-event-handler bash -c '
+          docker exec gigaclaw-event-handler bash -c '
             export GH_TOKEN=$(grep "^GH_TOKEN=" /app/.env | cut -d= -f2-)
             echo "${GH_TOKEN}" | gh auth login --with-token
             gh auth setup-git
@@ -29,35 +29,35 @@ jobs:
               exit 0
             fi
 
-            # Detect gigabot version change from package-lock.json in git
+            # Detect gigaclaw version change from package-lock.json in git
             git show HEAD:package-lock.json > /tmp/old-lock.json 2>/dev/null || echo "{}" > /tmp/old-lock.json
             git show origin/main:package-lock.json > /tmp/new-lock.json
-            OLD_TPB=$(node -p "try{require(\"/tmp/old-lock.json\").packages[\"node_modules/gigabot\"]?.version||\"\"}catch(e){\"\"}")
-            NEW_TPB=$(node -p "try{require(\"/tmp/new-lock.json\").packages[\"node_modules/gigabot\"]?.version||\"\"}catch(e){\"\"}")
+            OLD_TPB=$(node -p "try{require(\"/tmp/old-lock.json\").packages[\"node_modules/gigaclaw\"]?.version||\"\"}catch(e){\"\"}")
+            NEW_TPB=$(node -p "try{require(\"/tmp/new-lock.json\").packages[\"node_modules/gigaclaw\"]?.version||\"\"}catch(e){\"\"}")
             rm -f /tmp/old-lock.json /tmp/new-lock.json
 
             git reset --hard origin/main
 
             if [ -n "$OLD_TPB" ] && [ "$OLD_TPB" != "$NEW_TPB" ]; then
-              # Version changed — run gigabot init to scaffold new templates
+              # Version changed — run gigaclaw init to scaffold new templates
               if echo "$NEW_TPB" | grep -q "-"; then
-                npx --yes "gigabot@${NEW_TPB}" init
+                npx --yes "gigaclaw@${NEW_TPB}" init
               else
-                npx --yes gigabot@latest init
+                npx --yes gigaclaw@latest init
               fi
 
               # Commit any template changes from init
               git add -A
               if ! git diff --cached --quiet; then
-                git commit -m "chore: apply gigabot init after upgrade"
+                git commit -m "chore: apply gigaclaw init after upgrade"
                 git push origin main
               fi
 
-              # Update GIGABOT_VERSION in .env so docker compose pulls the right image
-              if grep -q "^GIGABOT_VERSION=" /app/.env; then
-                sed -i "s/^GIGABOT_VERSION=.*/GIGABOT_VERSION=$NEW_TPB/" /app/.env
+              # Update GIGACLAW_VERSION in .env so docker compose pulls the right image
+              if grep -q "^GIGACLAW_VERSION=" /app/.env; then
+                sed -i "s/^GIGACLAW_VERSION=.*/GIGACLAW_VERSION=$NEW_TPB/" /app/.env
               else
-                echo "GIGABOT_VERSION=$NEW_TPB" >> /app/.env
+                echo "GIGACLAW_VERSION=$NEW_TPB" >> /app/.env
               fi
               echo "VERSION_CHANGED" > /app/.rebuild-status
             else
@@ -66,14 +66,14 @@ jobs:
             fi
           '
 
-          STATUS=$(docker exec gigabot-event-handler cat /app/.rebuild-status)
-          docker exec gigabot-event-handler rm -f /app/.rebuild-status
+          STATUS=$(docker exec gigaclaw-event-handler cat /app/.rebuild-status)
+          docker exec gigaclaw-event-handler rm -f /app/.rebuild-status
           echo "status=$STATUS" >> $GITHUB_OUTPUT
 
       - name: Rebuild (no version change)
         if: steps.pull.outputs.status == 'REBUILD'
         run: |
-          docker exec gigabot-event-handler bash -c '
+          docker exec gigaclaw-event-handler bash -c '
             rm -rf .next-new .next-old
             NEXT_BUILD_DIR=.next-new npm run build
 
@@ -89,10 +89,10 @@ jobs:
       - name: Pull new image and restart container
         if: steps.pull.outputs.status == 'VERSION_CHANGED'
         run: |
-          HOST_DIR=$(docker inspect gigabot-event-handler --format '{{index .Config.Labels "com.docker.compose.project.working_dir"}}')
+          HOST_DIR=$(docker inspect gigaclaw-event-handler --format '{{index .Config.Labels "com.docker.compose.project.working_dir"}}')
           docker compose -f /project/docker-compose.yml --project-directory "$HOST_DIR" --env-file /project/.env pull event-handler
-          docker stop gigabot-event-handler || true
-          docker rm gigabot-event-handler || true
+          docker stop gigaclaw-event-handler || true
+          docker rm gigaclaw-event-handler || true
           docker compose -f /project/docker-compose.yml --project-directory "$HOST_DIR" --env-file /project/.env up -d event-handler
 
       - name: Rebuild in new container
@@ -100,13 +100,13 @@ jobs:
         run: |
           echo "Waiting for new container..."
           for i in $(seq 1 30); do
-            if docker exec gigabot-event-handler echo "ready" 2>/dev/null; then
+            if docker exec gigaclaw-event-handler echo "ready" 2>/dev/null; then
               break
             fi
             sleep 2
           done
 
-          docker exec gigabot-event-handler bash -c '
+          docker exec gigaclaw-event-handler bash -c '
             npm install --omit=dev
 
             rm -rf .next-new .next-old

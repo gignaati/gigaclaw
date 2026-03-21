@@ -9,7 +9,7 @@ This patch release addresses three onboarding friction points reported by a real
 The user ran the one-command installer and hit the following issues in sequence:
 
 1. `npm run setup` failed with `npm error Missing script: "setup"` — because they were still in the **parent directory** after the installer finished
-2. `docker compose up -d` failed with `pull access denied for gignaati/gigabot` — because the compose file referenced a **private Docker image** that requires registry login
+2. `docker compose up -d` failed with `pull access denied for gignaati/gigaclaw` — because the compose file referenced a **private Docker image** that requires registry login
 3. Even after the wizard completed, Docker was launched **blindly** without checking if it was available or if the user wanted to use it
 
 ---
@@ -18,20 +18,20 @@ The user ran the one-command installer and hit the following issues in sequence:
 
 ### Fix 1 — `install.sh`: Auto-cd and auto-launch setup
 
-**Before:** The installer printed `cd my-gigabot && npm run setup` as a manual instruction. Users who missed this ran `npm run setup` from the wrong directory.
+**Before:** The installer printed `cd my-gigaclaw && npm run setup` as a manual instruction. Users who missed this ran `npm run setup` from the wrong directory.
 
 **After:** The installer now automatically `cd`s into the project directory and runs `npm run setup` as the final step. The user experience is now a single command from start to finish:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/gignaati/gigabot/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/gignaati/gigaclaw/main/install.sh | bash
 # → scaffolds project, installs deps, launches setup wizard automatically
 ```
 
 ### Fix 2 — `docker-compose.local.yml`: Build from local source
 
-**Before:** The compose file used `image: gignaati/gigabot:event-handler-${GIGABOT_VERSION}` — a private image that requires `docker login` and does not exist on Docker Hub publicly.
+**Before:** The compose file used `image: gignaati/gigaclaw:event-handler-${GIGACLAW_VERSION}` — a private image that requires `docker login` and does not exist on Docker Hub publicly.
 
-**After:** The compose file now uses `dockerfile_inline` to build GigaBot directly from the local source code using the official `node:20-alpine` image. **No registry login required.**
+**After:** The compose file now uses `dockerfile_inline` to build GigaClaw directly from the local source code using the official `node:20-alpine` image. **No registry login required.**
 
 ```yaml
 build:
@@ -66,16 +66,16 @@ First build: ~2–3 minutes. Subsequent starts: instant (layer cache).
 ## Upgrade
 
 ```bash
-npx gigabot@latest upgrade
+npx gigaclaw@latest upgrade
 ```
 
 Or for new installs:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/gignaati/gigabot/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/gignaati/gigaclaw/main/install.sh | bash
 ```
 
 ---
 
-**Full changelog:** [CHANGELOG.md](https://github.com/gignaati/gigabot/blob/main/CHANGELOG.md)
-**npm:** [gigabot@1.2.1](https://www.npmjs.com/package/gigabot/v/1.2.1)
+**Full changelog:** [CHANGELOG.md](https://github.com/gignaati/gigaclaw/blob/main/CHANGELOG.md)
+**npm:** [gigaclaw@1.2.1](https://www.npmjs.com/package/gigaclaw/v/1.2.1)

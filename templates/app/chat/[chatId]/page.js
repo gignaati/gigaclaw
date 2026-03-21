@@ -1,5 +1,5 @@
-import { auth } from 'gigabot/auth';
-import { ChatPage } from 'gigabot/chat';
+import { auth } from 'gigaclaw/auth';
+import { ChatPage } from 'gigaclaw/chat';
 
 export default async function ChatRoute({ params }) {
   // Next.js 15: params is synchronous — no await needed

@@ -1,10 +1,10 @@
 /**
- * Next.js instrumentation hook for gigabot.
+ * Next.js instrumentation hook for gigaclaw.
  * This file is loaded by Next.js on server start when instrumentationHook is enabled.
  *
  * Users should create an instrumentation.js in their project root that imports this:
  *
- *   export { register } from 'gigabot/instrumentation';
+ *   export { register } from 'gigaclaw/instrumentation';
  *
  * Or they can re-export and add their own logic.
  */
@@ -58,5 +58,5 @@ export async function register() {
     if (stored) setUpdateAvailable(stored);
   } catch {}
 
-  console.log('gigabot initialized');
+  console.log('gigaclaw initialized');
 }

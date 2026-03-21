@@ -6,12 +6,12 @@
  * directly in this file. It cannot be re-exported from another module because
  * Turbopack/Webpack statically analyses it at compile time.
  *
- * The `middleware` function is imported from the gigabot package and handles:
+ * The `middleware` function is imported from the gigaclaw package and handles:
  *   - Authentication checks (redirects unauthenticated users to /login)
  *   - Stale session cookie cleanup on AUTH_SECRET rotation
  *   - Skipping auth for /api routes, static assets, and the /login page itself
  */
-export { middleware } from 'gigabot/middleware';
+export { middleware } from 'gigaclaw/middleware';
 
 /**
  * Route matcher config — must be a static literal object in this file.

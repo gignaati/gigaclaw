@@ -1,6 +1,6 @@
 # Templates Directory — Scaffolding Only
 
-This directory contains files that get copied into user projects when they run `npx gigabot init`. It is **not** where event handler logic, API routes, or core features live.
+This directory contains files that get copied into user projects when they run `npx gigaclaw init`. It is **not** where event handler logic, API routes, or core features live.
 
 ## Rules
 
@@ -10,7 +10,7 @@ This directory contains files that get copied into user projects when they run `
 
 ## What belongs here
 
-- **Next.js wiring**: `next.config.mjs`, `instrumentation.js`, catch-all route, middleware — thin re-exports from `gigabot/*`
+- **Next.js wiring**: `next.config.mjs`, `instrumentation.js`, catch-all route, middleware — thin re-exports from `gigaclaw/*`
 - **User-editable config**: `config/SOUL.md`, `config/JOB_PLANNING.md`, `config/CRONS.json`, `config/TRIGGERS.json`, etc.
 - **GitHub Actions workflows**: `.github/workflows/`
 - **Docker files**: `docker/`, `docker-compose.yml`
@@ -24,6 +24,6 @@ This directory contains files that get copied into user projects when they run `
 - Database operations
 - LLM/AI integrations
 - Tool implementations
-- Anything that should be shared across all users via `npm update gigabot`
+- Anything that should be shared across all users via `npm update gigaclaw`
 
 If you're adding a feature to the event handler, put it in the package. Templates just wire into it.

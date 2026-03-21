@@ -26,7 +26,7 @@ When Node.js is still not found after sourcing, the error now shows platform-spe
 
 **Root cause:** `AUTH_SECRET` was generated with `randomBytes(32).toString('base64')`, which produces `+`, `/`, and `=` characters. dotenv on Windows misparses unquoted values containing these characters — `+` becomes a space and `=` terminates the value — silently corrupting the JWT signing key. NextAuth cannot verify any session token and returns an opaque "unexpected syntax" error.
 
-**Fix:** Switched to `base64url` encoding (RFC 4648 §5) in both `gigabot init` and `gigabot reset-auth`. `base64url` uses only `A-Z a-z 0-9 - _` — no special characters, no quoting needed.
+**Fix:** Switched to `base64url` encoding (RFC 4648 §5) in both `gigaclaw init` and `gigaclaw reset-auth`. `base64url` uses only `A-Z a-z 0-9 - _` — no special characters, no quoting needed.
 
 **Action required for existing Windows users:** Run `npm run reset-auth` to regenerate your `AUTH_SECRET`, then restart the server. All existing sessions will be invalidated.
 
@@ -55,7 +55,7 @@ Test coverage: syntax validation, `base64url` encoding (no `+/=` chars confirmed
 ## Upgrade
 
 ```bash
-npx gigabot@latest upgrade
+npx gigaclaw@latest upgrade
 ```
 
 Windows users with the login bug must also run:

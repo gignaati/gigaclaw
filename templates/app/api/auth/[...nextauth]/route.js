@@ -1,1 +1,1 @@
-export { GET, POST } from 'gigabot/auth';
+export { GET, POST } from 'gigaclaw/auth';

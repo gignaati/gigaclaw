@@ -11,19 +11,19 @@ Two GitHub Actions workflows handle automated upgrades:
 Triggered via `workflow_dispatch` (Actions tab > "Upgrade Event Handler" > Run workflow). This workflow:
 
 1. Clones your repo into a temp directory inside the event handler container
-2. Runs `npm install` + `npm update gigabot`
-3. If the version changed, creates an `upgrade/gigabot-<version>-<timestamp>` branch
+2. Runs `npm install` + `npm update gigaclaw`
+3. If the version changed, creates an `upgrade/gigaclaw-<version>-<timestamp>` branch
 4. Opens a PR and enables auto-merge with `--delete-branch`
 
-This workflow only updates `package.json` and `package-lock.json`. It does **not** run `gigabot init`, rebuild, or restart anything. That happens when the PR merges.
+This workflow only updates `package.json` and `package-lock.json`. It does **not** run `gigaclaw init`, rebuild, or restart anything. That happens when the PR merges.
 
 ### 2. rebuild-event-handler.yml (on push to main)
 
 Triggered automatically when the upgrade PR merges to `main`. This workflow detects the version change and:
 
-1. Runs `npx gigabot init` inside the container to scaffold updated templates
+1. Runs `npx gigaclaw init` inside the container to scaffold updated templates
 2. Commits any template changes back to `main`
-3. Updates `GIGABOT_VERSION` in the server's `.env`
+3. Updates `GIGACLAW_VERSION` in the server's `.env`
 4. Pulls the new Docker image for the event handler
 5. Stops the old container and starts a new one
 6. Runs `npm install --omit=dev` in the new container
@@ -36,9 +36,9 @@ If the version didn't change (normal code push), it skips steps 1-5 and does a f
 If an automated upgrade fails, SSH into your server and rebuild manually:
 
 ```bash
-docker exec gigabot-event-handler npm install --omit=dev
-docker exec gigabot-event-handler bash -c 'rm -rf .next-new .next-old && NEXT_BUILD_DIR=.next-new npm run build && mv .next .next-old 2>/dev/null; mv .next-new .next && rm -rf .next-old'
-docker exec gigabot-event-handler npx pm2 restart all
+docker exec gigaclaw-event-handler npm install --omit=dev
+docker exec gigaclaw-event-handler bash -c 'rm -rf .next-new .next-old && NEXT_BUILD_DIR=.next-new npm run build && mv .next .next-old 2>/dev/null; mv .next-new .next && rm -rf .next-old'
+docker exec gigaclaw-event-handler npx pm2 restart all
 ```
 
 ### Merge conflicts on upgrade PR?
@@ -47,7 +47,7 @@ If the upgrade PR has merge conflicts in GitHub, resolve them in the GitHub UI o
 
 ```bash
 git fetch origin
-git checkout upgrade/gigabot-<version>-<timestamp>
+git checkout upgrade/gigaclaw-<version>-<timestamp>
 git merge main
 # resolve conflicts
 git push
@@ -58,8 +58,8 @@ Once resolved, the PR merges and `rebuild-event-handler.yml` takes over.
 ### Useful diagnostic commands
 
 ```bash
-docker ps -a | grep gigabot-event-handler          # container running?
-docker logs gigabot-event-handler --tail 50         # container logs
-docker exec gigabot-event-handler npx pm2 status    # PM2 status
-docker exec gigabot-event-handler npx pm2 logs --lines 30  # app logs
+docker ps -a | grep gigaclaw-event-handler          # container running?
+docker logs gigaclaw-event-handler --tail 50         # container logs
+docker exec gigaclaw-event-handler npx pm2 status    # PM2 status
+docker exec gigaclaw-event-handler npx pm2 logs --lines 30  # app logs
 ```

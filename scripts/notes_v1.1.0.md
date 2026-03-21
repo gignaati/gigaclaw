@@ -22,6 +22,6 @@ Giga Bot v1.1.0 is the first major release under the Gignaati brand. It introduc
 
 ---
 
-**Full Changelog**: https://github.com/gignaati/gigabot/compare/v1.0...v1.1.0
+**Full Changelog**: https://github.com/gignaati/gigaclaw/compare/v1.0...v1.1.0
 
-**npm**: `npm install gigabot@1.1.0` · **Upgrade**: `npx gigabot@latest upgrade`
+**npm**: `npm install gigaclaw@1.1.0` · **Upgrade**: `npx gigaclaw@latest upgrade`

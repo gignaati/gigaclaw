@@ -1,15 +1,15 @@
 /**
- * Next.js config wrapper for gigabot.
+ * Next.js config wrapper for gigaclaw.
  * Enables instrumentation hook for cron scheduling on server start.
  *
  * Usage in user's next.config.mjs:
- *   import { withGigabot } from 'gigabot/config';
- *   export default withGigabot({});
+ *   import { withGigaclaw } from 'gigaclaw/config';
+ *   export default withGigaclaw({});
  *
  * @param {Object} nextConfig - User's Next.js config
  * @returns {Object} Enhanced Next.js config
  */
-export function withGigabot(nextConfig = {}) {
+export function withGigaclaw(nextConfig = {}) {
   return {
     ...nextConfig,
     distDir: process.env.NEXT_BUILD_DIR || '.next',
