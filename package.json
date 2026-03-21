@@ -1,6 +1,6 @@
 {
   "name": "gigaclaw",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "type": "module",
   "description": "Giga Claw — Gignaati's autonomous AI agent platform. Build, deploy, and run AI agents 24/7 with a two-layer architecture: Next.js Event Handler + Docker Agent. India-first, edge-native AI.",
   "bin": {
@@ -8,20 +8,62 @@
   },
   "main": "api/index.js",
   "exports": {
-    "./api": "./api/index.js",
-    "./config": "./config/index.js",
-    "./instrumentation": "./config/instrumentation.js",
-    "./auth": "./lib/auth/index.js",
-    "./auth/actions": "./lib/auth/actions.js",
-    "./chat/api": "./lib/chat/api.js",
-    "./db": "./lib/db/index.js",
-    "./chat": "./lib/chat/components/index.js",
-    "./chat/actions": "./lib/chat/actions.js",
-    "./code": "./lib/code/index.js",
-    "./code/actions": "./lib/code/actions.js",
-    "./code/ws-proxy": "./lib/code/ws-proxy.js",
-    "./middleware": "./lib/auth/middleware.js",
-    "./trust-ledger/actions": "./lib/chat/trust-ledger-actions.js",
+    "./api": {
+      "import": "./api/index.js",
+      "default": "./api/index.js"
+    },
+    "./config": {
+      "import": "./config/index.js",
+      "default": "./config/index.js"
+    },
+    "./instrumentation": {
+      "import": "./config/instrumentation.js",
+      "default": "./config/instrumentation.js"
+    },
+    "./auth": {
+      "import": "./lib/auth/index.js",
+      "default": "./lib/auth/index.js"
+    },
+    "./auth/actions": {
+      "import": "./lib/auth/actions.js",
+      "default": "./lib/auth/actions.js"
+    },
+    "./chat/api": {
+      "import": "./lib/chat/api.js",
+      "default": "./lib/chat/api.js"
+    },
+    "./db": {
+      "import": "./lib/db/index.js",
+      "default": "./lib/db/index.js"
+    },
+    "./chat": {
+      "import": "./lib/chat/components/index.js",
+      "default": "./lib/chat/components/index.js"
+    },
+    "./chat/actions": {
+      "import": "./lib/chat/actions.js",
+      "default": "./lib/chat/actions.js"
+    },
+    "./code": {
+      "import": "./lib/code/index.js",
+      "default": "./lib/code/index.js"
+    },
+    "./code/actions": {
+      "import": "./lib/code/actions.js",
+      "default": "./lib/code/actions.js"
+    },
+    "./code/ws-proxy": {
+      "import": "./lib/code/ws-proxy.js",
+      "default": "./lib/code/ws-proxy.js"
+    },
+    "./middleware": {
+      "import": "./lib/auth/middleware.js",
+      "default": "./lib/auth/middleware.js"
+    },
+    "./trust-ledger/actions": {
+      "import": "./lib/chat/trust-ledger-actions.js",
+      "default": "./lib/chat/trust-ledger-actions.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

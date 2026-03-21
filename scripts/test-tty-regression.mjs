@@ -649,18 +649,6 @@ test('Both installers use Gigaclaw branding — no stale Giga Bot references', (
   );
 });
 
-// ─── Run all tests and print final summary ───────────────────────────────────
-runAll().then(() => {
-  const total = passed + failed + skipped;
-  console.log(`\n${'─'.repeat(50)}`);
-  console.log(`  Final: ${passed}/${total} passed, ${failed} failed, ${skipped} skipped`);
-  console.log(`${'─'.repeat(50)}\n`);
-  if (failed > 0) process.exit(1);
-}).catch((err) => {
-  console.error('\n  ❌  Test runner crashed:', err.message);
-  process.exit(1);
-});
-
 // ── Trust Ledger (v1.5.0) ──────────────────────────────────────────────────
 test('Trust Ledger: audit_log table defined in schema.js', () => {
   const schema = fs.readFileSync(path.join(ROOT, 'lib/db/schema.js'), 'utf8');
@@ -723,4 +711,56 @@ test('Trust Ledger: package.json exports trust-ledger/actions and version is 1.5
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   assert(pkg.version === '1.5.0', `version must be 1.5.0, got ${pkg.version}`);
   assert(pkg.exports['./trust-ledger/actions'], 'must export ./trust-ledger/actions');
+});
+
+// ── v1.5.1: ERR_MODULE_NOT_FOUND fix (Node v24 + Windows) ────────────────────
+test('v1.5.1: package.json exports use conditional objects (Node v24 compatible)', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  const exps = pkg.exports || {};
+  assert(
+    typeof exps['./config'] === 'object' && exps['./config'] !== null &&
+    exps['./config']['import'] === './config/index.js',
+    './config export must be a conditional object with import field'
+  );
+  assert(
+    typeof exps['./auth'] === 'object' && exps['./auth'] !== null &&
+    exps['./auth']['import'] === './lib/auth/index.js',
+    './auth export must be a conditional object with import field'
+  );
+  assert(
+    typeof exps['./chat/actions'] === 'object' && exps['./chat/actions'] !== null,
+    './chat/actions export must be a conditional object'
+  );
+});
+
+test('v1.5.1: next.config.mjs has defensive try/catch for ERR_MODULE_NOT_FOUND', () => {
+  const tpl = fs.readFileSync(path.join(ROOT, 'templates/next.config.mjs'), 'utf8');
+  assert(tpl.includes('try {'), 'next.config.mjs must have try block');
+  assert(tpl.includes('ERR_MODULE_NOT_FOUND'), 'next.config.mjs must check ERR_MODULE_NOT_FOUND');
+  assert(tpl.includes('npm install'), 'next.config.mjs must show npm install fix instruction');
+  assert(tpl.includes('process.exit(1)'), 'next.config.mjs must exit on unrecoverable error');
+});
+
+test('v1.5.1: install.ps1 verifies node_modules/gigaclaw and retries on failure', () => {
+  const ps1 = fs.readFileSync(path.join(ROOT, 'install.ps1'), 'utf8');
+  assert(
+    ps1.includes('GigaclawModulePath') && ps1.includes('node_modules'),
+    'install.ps1 must verify node_modules/gigaclaw path after npm install'
+  );
+  assert(
+    ps1.includes('--prefer-online'),
+    'install.ps1 must retry npm install --prefer-online on missing package'
+  );
+});
+
+// ─── Run all tests and print final summary ───────────────────────────────────
+runAll().then(() => {
+  const total = passed + failed + skipped;
+  console.log(`\n${'─'.repeat(50)}`);
+  console.log(`  Final: ${passed}/${total} passed, ${failed} failed, ${skipped} skipped`);
+  console.log(`${'─'.repeat(50)}\n`);
+  if (failed > 0) process.exit(1);
+}).catch((err) => {
+  console.error('\n  ❌  Test runner crashed:', err.message);
+  process.exit(1);
 });

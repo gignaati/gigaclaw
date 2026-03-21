@@ -394,6 +394,26 @@ try {
 } catch {
     Write-Warn "npm install encountered an error: $_"
 }
+# Verify gigaclaw package resolved correctly (guards against ERR_MODULE_NOT_FOUND on Node v24+)
+$GigaclawModulePath = Join-Path (Get-Location).Path "node_modules" "gigaclaw"
+if (-not (Test-Path $GigaclawModulePath)) {
+    Write-Warn "node_modules/gigaclaw not found after npm install — retrying with --prefer-online..."
+    try {
+        & npm install --prefer-online
+    } catch {
+        Write-Warn "Retry failed: $_"
+    }
+    if (-not (Test-Path $GigaclawModulePath)) {
+        Write-Fail "gigaclaw package still not found in node_modules."
+        Write-Host ""
+        Write-Host "  Please run these commands manually, then start the dev server:" -ForegroundColor Yellow
+        Write-Cmd "cd `"$AbsProjectDir`""
+        Write-Cmd "npm install"
+        Write-Cmd "npm run dev"
+        Pop-Location
+        exit 1
+    }
+}
 Write-Host ""
 Write-Ok "Dependencies installed."
 
