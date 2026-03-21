@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * GigaBot Regression Test Suite
+ * GigaClaw Regression Test Suite
  *
  * Validates cross-platform install correctness:
  *   Tests  1-10  — TTY re-attachment (curl|bash), setup file syntax
  *   Tests 11-13  — Windows-safe AUTH_SECRET, shell:true, macOS PATH sourcing
  *   Tests 14-17  — install.ps1 PowerShell Windows installer
- *   Tests 18-20  — install.sh critical flow: npx --yes, npm install, GIGABOT_DIR
+ *   Tests 18-20  — install.sh critical flow: npx --yes, npm install, GIGACLAW_DIR
  *
  * NOTE: Tests 7 and 9 (physical /dev/tty access) are skipped on headless CI
  * runners (GitHub Actions, Docker without TTY) where /dev/tty is not attached
@@ -69,7 +69,7 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-console.log('\n🔍  GigaBot Regression Tests\n');
+console.log('\n🔍  GigaClaw Regression Tests\n');
 if (IS_CI) console.log('  ℹ️  Headless CI detected — /dev/tty physical-access tests will be skipped\n');
 
 // ─── Test 1: install.sh has exec < /dev/tty guard ────────────────────────────
@@ -423,29 +423,29 @@ test('dropdown-menu.js compiled file uses span role=button in default trigger pa
   );
 });
 
-// ─── Test 27: install.sh has GIGABOT_SKIP_SETUP=1 bypass ─────────────────────────
-test('install.sh supports GIGABOT_SKIP_SETUP=1 bypass for CI/CD pipelines', () => {
+// ─── Test 27: install.sh has GIGACLAW_SKIP_SETUP=1 bypass ─────────────────────────
+test('install.sh supports GIGACLAW_SKIP_SETUP=1 bypass for CI/CD pipelines', () => {
   const installSh = fs.readFileSync(path.join(ROOT, 'install.sh'), 'utf8');
   assert(
-    installSh.includes('GIGABOT_SKIP_SETUP') || installSh.includes('GIGACLAW_SKIP_SETUP'),
+    installSh.includes('GIGACLAW_SKIP_SETUP') || installSh.includes('GIGACLAW_SKIP_SETUP'),
     'install.sh is missing the GIGACLAW_SKIP_SETUP=1 bypass'
   );
   assert(
-    installSh.includes('"${GIGABOT_SKIP_SETUP:-0}" = "1"') ||
+    installSh.includes('"${GIGACLAW_SKIP_SETUP:-0}" = "1"') ||
     installSh.includes('"${GIGACLAW_SKIP_SETUP:-0}" = "1"'),
     'install.sh GIGACLAW_SKIP_SETUP check must use ${GIGACLAW_SKIP_SETUP:-0} with default value'
   );
 });
 
-// ─── Test 28: install.ps1 has GIGABOT_SKIP_SETUP=1 bypass ────────────────────────
-test('install.ps1 supports GIGABOT_SKIP_SETUP=1 bypass for CI/CD pipelines', () => {
+// ─── Test 28: install.ps1 has GIGACLAW_SKIP_SETUP=1 bypass ────────────────────────
+test('install.ps1 supports GIGACLAW_SKIP_SETUP=1 bypass for CI/CD pipelines', () => {
   const installPs1 = fs.readFileSync(path.join(ROOT, 'install.ps1'), 'utf8');
   assert(
-    installPs1.includes('GIGABOT_SKIP_SETUP') || installPs1.includes('GIGACLAW_SKIP_SETUP'),
+    installPs1.includes('GIGACLAW_SKIP_SETUP') || installPs1.includes('GIGACLAW_SKIP_SETUP'),
     'install.ps1 is missing the GIGACLAW_SKIP_SETUP bypass'
   );
   assert(
-    installPs1.includes("$env:GIGABOT_SKIP_SETUP -eq '1'") ||
+    installPs1.includes("$env:GIGACLAW_SKIP_SETUP -eq '1'") ||
     installPs1.includes("$env:GIGACLAW_SKIP_SETUP -eq '1'"),
     "install.ps1 GIGACLAW_SKIP_SETUP check must use \$env:GIGACLAW_SKIP_SETUP -eq '1'"
   );
@@ -707,9 +707,9 @@ test('Trust Ledger: AppSidebar includes Trust Ledger nav entry', () => {
   assert(sidebar.includes('Trust Ledger'), 'sidebar must show Trust Ledger label');
 });
 
-test('Trust Ledger: package.json exports trust-ledger/actions and version is 1.5.0', () => {
+test('Trust Ledger: package.json exports trust-ledger/actions and version is 1.6.0', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  assert(pkg.version === '1.5.0', `version must be 1.5.0, got ${pkg.version}`);
+  assert(pkg.version === '1.6.0', `version must be 1.6.0, got ${pkg.version}`);
   assert(pkg.exports['./trust-ledger/actions'], 'must export ./trust-ledger/actions');
 });
 

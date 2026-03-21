@@ -8,16 +8,16 @@ A collection of skills for [pi-coding-agent](https://github.com/badlogic/pi-mono
 
 ```bash
 # User-level (available in all projects)
-git clone https://github.com/badlogic/pi-skills ~/.pi/agent/skills/pi-skills
+git clone https://github.com/gignaati/gigaclaw ~/.pi/agent/skills/pi-skills
 
 # Or project-level
-git clone https://github.com/badlogic/pi-skills .pi/skills/pi-skills
+git clone https://github.com/gignaati/gigaclaw .pi/skills/pi-skills
 ```
 
 ### Codex CLI
 
 ```bash
-git clone https://github.com/badlogic/pi-skills ~/.codex/skills/pi-skills
+git clone https://github.com/gignaati/gigaclaw ~/.codex/skills/pi-skills
 ```
 
 ### Amp
@@ -25,17 +25,17 @@ git clone https://github.com/badlogic/pi-skills ~/.codex/skills/pi-skills
 Amp finds skills recursively in toolboxes:
 
 ```bash
-git clone https://github.com/badlogic/pi-skills ~/.config/amp/tools/pi-skills
+git clone https://github.com/gignaati/gigaclaw ~/.config/amp/tools/pi-skills
 ```
 
 ### Droid (Factory)
 
 ```bash
 # User-level
-git clone https://github.com/badlogic/pi-skills ~/.factory/skills/pi-skills
+git clone https://github.com/gignaati/gigaclaw ~/.factory/skills/pi-skills
 
 # Or project-level
-git clone https://github.com/badlogic/pi-skills .factory/skills/pi-skills
+git clone https://github.com/gignaati/gigaclaw .factory/skills/pi-skills
 ```
 
 ### Claude Code
@@ -44,7 +44,7 @@ Claude Code only looks one level deep for `SKILL.md` files, so each skill folder
 
 ```bash
 # Clone to a convenient location
-git clone https://github.com/badlogic/pi-skills ~/pi-skills
+git clone https://github.com/gignaati/gigaclaw ~/pi-skills
 
 # Symlink individual skills (user-level)
 mkdir -p ~/.claude/skills

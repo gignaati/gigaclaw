@@ -37,23 +37,28 @@ import chalk from 'chalk';
 import * as clack from '@clack/prompts';
 
 const logo = `
-   _______             ____        __ 
-  / ____(_)___ _____ _/ __ )____  / /_
- / / __/ / __ \`/ __ \`/ __  / __ \\/ __/
-/ /_/ / / /_/ / /_/ / /_/ / /_/ / /_  
-\\____/_/\\__, /\\__,_/_____/\\____/\\__/  
-        /____/                         
+   _______             ________
+  / ____(_)___ _____ _/ ____/ /___ _      __
+ / / __/ / __ \`/ __ \`/ /   / / __ \\ | /| / /
+/ /_/ / / /_/ / /_/ / /___/ / /_/ / |/ |/ /
+\\____/_/\\__, /\\__,_/\\____/_/\\____/|__/|__/
+       /____/
   India's Autonomous AI Agent · Powered by Gignaati
 `;
 
 async function main() {
   console.log(chalk.cyan(logo));
 
-  clack.intro('GigaBot Setup Wizard');
+  clack.intro('GigaClaw Setup Wizard');
 
   const mode = await clack.select({
-    message: 'How do you want to run GigaBot?',
+    message: 'How do you want to run GigaClaw?',
     options: [
+      {
+        value: 'hybrid',
+        label: 'Hybrid Mode',
+        hint: 'Cloud + Local AI — smart routing, best of both worlds (recommended)',
+      },
       {
         value: 'cloud',
         label: 'Cloud Mode',
@@ -72,7 +77,10 @@ async function main() {
     process.exit(0);
   }
 
-  if (mode === 'cloud') {
+  if (mode === 'hybrid') {
+    const { run } = await import('./setup-hybrid.mjs');
+    await run();
+  } else if (mode === 'cloud') {
     const { run } = await import('./setup-cloud.mjs');
     await run();
   } else {

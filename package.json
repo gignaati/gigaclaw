@@ -1,8 +1,8 @@
 {
   "name": "gigaclaw",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "type": "module",
-  "description": "Giga Claw — Gignaati's autonomous AI agent platform. Build, deploy, and run AI agents 24/7 with a two-layer architecture: Next.js Event Handler + Docker Agent. India-first, edge-native AI.",
+  "description": "GigaClaw — Gignaati's autonomous AI agent platform. Build, deploy, and run AI agents 24/7 with a two-layer architecture: Next.js Event Handler + Docker Agent. India-first, edge-native AI.",
   "bin": {
     "gigaclaw": "./bin/cli.js"
   },
@@ -83,7 +83,8 @@
     "db:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
     "test": "echo \"No tests yet\" && exit 0",
-    "test:tty": "node scripts/test-tty-regression.mjs"
+    "test:tty": "node scripts/test-tty-regression.mjs",
+    "test:full": "node scripts/test-full.mjs"
   },
   "keywords": [
     "ai",
@@ -126,7 +127,6 @@
     "bcrypt-ts": "^6.0.0",
     "better-sqlite3": "^12.6.2",
     "chalk": "^5.3.0",
-    "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "dotenv": "^16.3.1",
     "drizzle-orm": "^0.44.0",
@@ -141,8 +141,9 @@
     "zod": "^4.3.6"
   },
   "peerDependencies": {
-    "next": ">=15.5.12",
-    "next-auth": "^5.0.0-beta.30",
+    "next": ">=15.5.12 <17",
+    "next-auth": ">=5.0.0-beta.30",
+    "next-themes": ">=0.4.0",
     "react": ">=19.0.0",
     "react-dom": ">=19.0.0"
   },
@@ -156,6 +157,6 @@
     "esbuild": "^0.27.3"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }

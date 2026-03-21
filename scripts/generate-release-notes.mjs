@@ -2,7 +2,7 @@
 /**
  * generate-release-notes.mjs
  * ─────────────────────────────────────────────────────────────────────────────
- * Generates structured release notes for a Giga Bot version tag.
+ * Generates structured release notes for a GigaClaw version tag.
  *
  * Usage (local):
  *   node scripts/generate-release-notes.mjs [--from <prev-tag>] [--to <current-tag>]

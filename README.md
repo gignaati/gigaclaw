@@ -1,6 +1,6 @@
 <div align="center">
 
-# Giga Bot
+# GigaClaw
 
 ### Autonomous AI Agent Platform — Powered by Gignaati
 
@@ -18,16 +18,16 @@ India-first. Edge-native. Zero vendor lock-in.
 
 ---
 
-## What is Giga Bot?
+## What is GigaClaw?
 
-Giga Bot is a self-hosted, autonomous AI agent platform. You deploy it to your own server or VPS, and it runs 24/7 — responding to messages, executing scheduled jobs, handling webhooks, writing code, managing files, and completing complex multi-step tasks.
+GigaClaw is a self-hosted, autonomous AI agent platform. You deploy it to your own server or VPS, and it runs 24/7 — responding to messages, executing scheduled jobs, handling webhooks, writing code, managing files, and completing complex multi-step tasks.
 
 It is built on a two-layer architecture:
 
 - **Event Handler** — A Next.js server that handles real-time chat (web UI + Telegram), manages your agent's configuration, and creates jobs for the agent to execute.
 - **Agent Engine** — A Docker container that runs your agent jobs using GitHub Actions or a local Docker daemon. The agent can write code, run shell commands, browse the web, and interact with GitHub.
 
-Giga Bot is the only autonomous agent platform with **native PragatiGPT support** — India's indigenous Small Language Model for edge deployment, delivering 100% data privacy and zero foreign cloud dependency.
+GigaClaw is the only autonomous agent platform with **native PragatiGPT support** — India's indigenous Small Language Model for edge deployment, delivering 100% data privacy and zero foreign cloud dependency.
 
 ---
 
@@ -45,7 +45,7 @@ irm https://raw.githubusercontent.com/gignaati/gigaclaw/main/install.ps1 | iex
 
 ### All Platforms (npm / npx)
 ```bash
-# Create a new Giga Bot project
+# Create a new GigaClaw project
 mkdir my-gigaclaw && cd my-gigaclaw
 npx gigaclaw@latest init
 
@@ -61,7 +61,7 @@ npm run setup
 
 **Step 1 — Create a new GitHub repository** for your agent (e.g., `my-gigaclaw`).
 
-**Step 2 — Install Giga Bot** into a local folder with the same name:
+**Step 2 — Install GigaClaw** into a local folder with the same name:
 ```bash
 mkdir my-gigaclaw && cd my-gigaclaw
 npx gigaclaw@latest init
@@ -72,10 +72,10 @@ npm install
 ```bash
 npm run setup
 ```
-The wizard will ask for:
-- Your GitHub Personal Access Token
-- Your public URL (domain or ngrok URL)
-- Your LLM provider and API key (Claude, GPT, Gemini, PragatiGPT, or Ollama)
+The wizard will ask for your setup mode:
+- **Hybrid** (recommended) — Cloud + Local AI with smart routing
+- **Cloud** — GitHub + ngrok + Telegram, full features
+- **Local** — Ollama only, 100% offline
 
 **Step 4 — Start your agent:**
 ```bash
@@ -88,7 +88,7 @@ docker compose up -d
 
 ## Supported LLM Providers
 
-Giga Bot supports **6 LLM providers** — more than any other self-hosted agent platform:
+GigaClaw supports **6 LLM providers** — more than any other self-hosted agent platform:
 
 | Provider | Description | Data Privacy |
 |---|---|---|
@@ -135,11 +135,48 @@ LLM_PROVIDER=custom       # Any OpenAI-compatible API
 - **Auto-merge** — Agent can merge its own PRs after review
 - **Hot reload** — Push to `main` triggers automatic rebuild and restart
 
-### Giga Bot Exclusive Features
+### GigaClaw Exclusive Features
+- **Hybrid Mode** — Cloud + Local AI with smart per-task routing (v1.6.0)
 - **PragatiGPT** — India's indigenous SLM for edge deployment
 - **Ollama** — Run any open-source model with zero cloud dependency
 - **Multi-LLM routing** — Different LLMs for chat vs. agent jobs
 - **Per-job LLM override** — Specify `llm_provider` and `llm_model` per cron job
+
+---
+
+## Hybrid Mode (New in v1.6.0)
+
+Run both cloud and local LLMs simultaneously. GigaClaw automatically routes each task to the best provider.
+
+```bash
+npm run setup   # Choose "Hybrid Mode" (recommended)
+```
+
+### Routing Strategies
+
+| Strategy | Best for |
+|----------|----------|
+| **Auto** | Smart routing — complex tasks go to cloud, simple ones stay local |
+| **Cost-Optimized** | Minimize API costs — local by default, cloud only when needed |
+| **Quality-First** | Best output quality — cloud by default, local for drafts |
+| **Privacy-First** | Maximum data privacy — local by default, cloud only for complex tasks |
+
+### How it works
+
+1. Setup configures a **cloud provider** (Claude, GPT, Gemini, PragatiGPT) and a **local provider** (Ollama)
+2. Each message is scored for complexity and privacy sensitivity
+3. The task router picks the optimal provider based on your chosen strategy
+4. Ollama availability is auto-detected at runtime — no reconfiguration needed
+
+```bash
+# Example .env for hybrid mode
+GIGACLAW_MODE=hybrid
+LLM_PROVIDER=anthropic           # Cloud (primary)
+LLM_MODEL=claude-sonnet-4-6
+LOCAL_LLM_PROVIDER=ollama         # Local (secondary)
+LOCAL_LLM_MODEL=llama3.2
+HYBRID_ROUTING=auto               # auto | cost-optimized | quality-first | privacy-first
+```
 
 ---
 
@@ -162,7 +199,7 @@ npx gigaclaw set-var <KEY> [VALUE]            # Set GitHub repository variable
 
 ## Configuration Files
 
-These files in `config/` define your agent's personality and behavior. They are **yours to customize** — Giga Bot will never overwrite them:
+These files in `config/` define your agent's personality and behavior. They are **yours to customize** — GigaClaw will never overwrite them:
 
 | File | Purpose |
 |---|---|
@@ -187,7 +224,7 @@ npx gigaclaw upgrade 1.2.72   # Specific version
 
 ## Deployment
 
-Giga Bot runs on any Linux server with Docker. Recommended:
+GigaClaw runs on any Linux server with Docker. Recommended:
 
 | Provider | Spec | Monthly Cost |
 |---|---|---|

@@ -1,28 +1,28 @@
-# My Giga Bot Agent
-> Powered by **[Giga Bot](https://github.com/gignaati/gigabot)** — India's Autonomous AI Agent Platform by [Gignaati](https://www.gignaati.com)
+# My GigaClaw Agent
+> Powered by **[GigaClaw](https://github.com/gignaati/gigaclaw)** — India's Autonomous AI Agent Platform by [Gignaati](https://www.gignaati.com)
 
 ## Overview
 
-This is an autonomous AI agent powered by [Giga Bot](https://github.com/gignaati/gigabot). It uses a **two-layer architecture**:
+This is an autonomous AI agent powered by [GigaClaw](https://github.com/gignaati/gigaclaw). It uses a **two-layer architecture**:
 
 1. **Event Handler** — A Next.js server that orchestrates everything: web UI, Telegram chat, cron scheduling, webhook triggers, and job creation.
 2. **Docker Agent** — A container that runs the Pi coding agent for autonomous task execution. Each job gets its own branch, container, and PR.
 
-All core logic lives in the `gigabot` npm package. This project is a scaffolded shell — thin Next.js wiring, user-editable configuration, GitHub Actions workflows, and Docker files.
+All core logic lives in the `gigaclaw` npm package. This project is a scaffolded shell — thin Next.js wiring, user-editable configuration, GitHub Actions workflows, and Docker files.
 
 ## Directory Structure
 
 ```
 project-root/
 ├── CLAUDE.md                          # This file (project documentation)
-├── next.config.mjs                    # Next.js config (wraps withGigabot())
+├── next.config.mjs                    # Next.js config (wraps withGigaclaw())
 ├── instrumentation.js                 # Server startup hook (re-exports from package)
 ├── middleware.js                       # Auth middleware (re-exports from package)
 ├── .env                               # API keys and tokens (gitignored)
 ├── package.json
 │
 ├── app/                               # Next.js app directory (page shells + client components)
-│   ├── api/[...gigabot]/route.js   # Catch-all API route (re-exports from package)
+│   ├── api/[...gigaclaw]/route.js   # Catch-all API route (re-exports from package)
 │   ├── stream/chat/route.js           # Chat streaming endpoint (session auth)
 │   └── components/                    # Client-side components
 │
@@ -45,7 +45,7 @@ project-root/
 ├── cron/                              # Scripts for command-type cron actions
 ├── triggers/                          # Scripts for command-type trigger actions
 ├── logs/                              # Per-job output (logs/<JOB_ID>/job.md + session .jsonl)
-└── data/                              # SQLite database (data/gigabot.sqlite)
+└── data/                              # SQLite database (data/gigaclaw.sqlite)
 ```
 
 ## Two-Layer Architecture
@@ -217,7 +217,7 @@ All API routes are under `/api/`, handled by the catch-all route.
 | `/api/jobs/status` | GET | `x-api-key` | Check status of running/queued jobs |
 | `/api/ping` | GET | Public | Health check |
 
-**`x-api-key`**: Database-backed API keys generated through the web UI (Settings > Secrets). Keys are SHA-256 hashed, verified with timing-safe comparison. Format: `tpb_` prefix + 64 hex characters.
+**`x-api-key`**: Database-backed API keys generated through the web UI (Settings > Secrets). Keys are SHA-256 hashed, verified with timing-safe comparison. Format: `gcl_` prefix + 64 hex characters.
 
 ## Web Interface
 
@@ -229,7 +229,7 @@ NextAuth v5 with Credentials provider (email/password), JWT in httpOnly cookies.
 
 ## Database
 
-SQLite via Drizzle ORM at `data/gigabot.sqlite`. Auto-initialized and auto-migrated on server startup. Tables: `users`, `chats`, `messages`, `notifications`, `subscriptions`, `settings` (key-value store, also stores API keys). Column naming: camelCase in JS → snake_case in SQL.
+SQLite via Drizzle ORM at `data/gigaclaw.sqlite`. Auto-initialized and auto-migrated on server startup. Tables: `users`, `chats`, `messages`, `notifications`, `subscriptions`, `settings` (key-value store, also stores API keys). Column naming: camelCase in JS → snake_case in SQL.
 
 ## GitHub Actions Workflows
 
@@ -237,7 +237,7 @@ SQLite via Drizzle ORM at `data/gigabot.sqlite`. Auto-initialized and auto-migra
 |----------|---------|---------|
 | `run-job.yml` | `job/*` branch created | Runs the Docker agent container |
 | `rebuild-event-handler.yml` | Push to `main` | Rebuilds server (fast path or Docker restart) |
-| `upgrade-event-handler.yml` | Manual `workflow_dispatch` | Creates PR to upgrade gigabot package |
+| `upgrade-event-handler.yml` | Manual `workflow_dispatch` | Creates PR to upgrade gigaclaw package |
 | `build-image.yml` | `docker/pi-coding-agent-job/**` changes | Builds Pi coding agent Docker image to GHCR |
 | `auto-merge.yml` | Job PR opened | Squash-merges if changes are within `ALLOWED_PATHS` |
 | `notify-pr-complete.yml` | After `auto-merge.yml` | Sends job completion notification |
@@ -262,8 +262,8 @@ SQLite via Drizzle ORM at `data/gigabot.sqlite`. Auto-initialized and auto-migra
 | `APP_URL` | Public URL for the event handler | Required |
 | `AUTO_MERGE` | Set to `"false"` to disable auto-merge | Enabled |
 | `ALLOWED_PATHS` | Comma-separated path prefixes for auto-merge | `/logs` |
-| `JOB_IMAGE_URL` | Docker image for job agent (GHCR URLs trigger auto-builds) | Default gigabot image |
-| `EVENT_HANDLER_IMAGE_URL` | Docker image for event handler | Default gigabot image |
+| `JOB_IMAGE_URL` | Docker image for job agent (GHCR URLs trigger auto-builds) | Default gigaclaw image |
+| `EVENT_HANDLER_IMAGE_URL` | Docker image for event handler | Default gigaclaw image |
 | `RUNS_ON` | GitHub Actions runner label | `ubuntu-latest` |
 | `LLM_PROVIDER` | LLM provider for Docker agent | `anthropic` |
 | `LLM_MODEL` | LLM model name for Docker agent | Provider default |

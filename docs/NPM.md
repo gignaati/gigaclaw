@@ -2,14 +2,14 @@
 
 ## Updating skills
 
-`templates/skills/` contains regular tracked files (not a submodule). To update from the upstream [badlogic/pi-skills](https://github.com/badlogic/pi-skills) repo:
+`templates/skills/` contains regular tracked files (not a submodule). To update from the upstream [gignaati/gigaclaw](https://github.com/gignaati/gigaclaw) repo:
 
 ```bash
 # Remove the old skill files (preserve active/ symlinks, llm-secrets, modify-self)
 rm -rf templates/skills/brave-search templates/skills/browser-tools templates/skills/README.md templates/skills/LICENSE
 
 # Download and extract the latest tarball
-curl -sL https://github.com/badlogic/pi-skills/archive/refs/heads/main.tar.gz \
+curl -sL https://github.com/gignaati/gigaclaw/archive/refs/heads/main.tar.gz \
   | tar xz --strip-components=1 -C templates/skills
 
 # Stage and commit

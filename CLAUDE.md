@@ -32,6 +32,7 @@ The `templates/` directory contains **only files that get scaffolded into user p
 │   ├── auth/                   # NextAuth config, helpers, middleware, server actions
 │   ├── channels/               # Channel adapters (base class, Telegram, factory)
 │   ├── chat/                   # Chat route handler, server actions, React UI components
+│   ├── code/                   # Code workspace functionality (browser-based coding agent sessions)
 │   ├── db/                     # SQLite via Drizzle (schema, migrations, api-keys)
 │   ├── tools/                  # Job creation, GitHub API, Telegram, OpenAI Whisper
 │   └── utils/
@@ -41,7 +42,7 @@ The `templates/` directory contains **only files that get scaffolded into user p
 │   └── instrumentation.js      # Server startup hook (loads .env, starts crons)
 ├── bin/
 │   └── cli.js                  # CLI entry point
-├── setup/                      # Interactive setup wizard
+├── setup/                      # Interactive setup wizard (cloud, local, hybrid modes)
 ├── templates/                  # Scaffolded to user projects (see rule above)
 ├── docs/                       # Extended documentation
 └── package.json
@@ -60,9 +61,14 @@ The `templates/` directory contains **only files that get scaffolded into user p
 | `config/index.js` | `withGigaclaw()` Next.js config wrapper |
 | `config/instrumentation.js` | `register()` startup hook (loads .env, validates AUTH_SECRET, init DB, starts crons) |
 | `bin/cli.js` | CLI entry point (`gigaclaw init`, `setup`, `reset`, `diff`, etc.) |
-| `lib/ai/index.js` | Chat, streaming, and job summary functions |
-| `lib/ai/agent.js` | LangGraph agent with SQLite checkpointing and tool use |
+| `lib/ai/index.js` | Chat, streaming, and job summary functions (hybrid routing integrated) |
+| `lib/ai/agent.js` | LangGraph agent with SQLite checkpointing, multi-provider cache |
+| `lib/ai/task-router.js` | Hybrid mode per-message cloud/local routing |
+| `lib/ai/provider-health.js` | Runtime provider health checks (Ollama, cloud API keys) |
 | `lib/channels/base.js` | Channel adapter base class (normalize messages across platforms) |
+| `lib/code/index.js` | Code workspace page component exports |
+| `lib/code/actions.js` | Server actions for code workspace CRUD |
+| `lib/code/ws-proxy.js` | WebSocket proxy for terminal connections to workspace containers |
 | `lib/db/index.js` | Database initialization — SQLite via Drizzle ORM |
 | `lib/db/api-keys.js` | API key management (SHA-256 hashed, timing-safe verify) |
 
@@ -78,6 +84,9 @@ The `templates/` directory contains **only files that get scaffolded into user p
 | `gigaclaw/chat` | `lib/chat/components/index.js` | Chat UI components |
 | `gigaclaw/chat/actions` | `lib/chat/actions.js` | Server actions for chats, notifications, and swarm |
 | `gigaclaw/chat/api` | `lib/chat/api.js` | Dedicated chat streaming route handler (session auth) |
+| `gigaclaw/code` | `lib/code/index.js` | Code workspace components |
+| `gigaclaw/code/actions` | `lib/code/actions.js` | Server actions for workspace management |
+| `gigaclaw/code/ws-proxy` | `lib/code/ws-proxy.js` | WebSocket proxy for terminal access |
 | `gigaclaw/db` | `lib/db/index.js` | Database access |
 | `gigaclaw/middleware` | `lib/auth/middleware.js` | Auth middleware |
 
@@ -181,3 +190,67 @@ NextAuth v5 with Credentials provider (email/password), JWT in httpOnly cookies.
 - **GitHub repository variables** — read by `run-job.yml` (agent jobs). Set by `setup/lib/sync.mjs`.
 
 These are independent environments. They use the same variable names. They can hold different values (e.g. chat uses sonnet, jobs use opus). Do NOT create separate `AGENT_LLM_*` variable names — just set different values in `.env` vs GitHub variables.
+
+## Hybrid Mode (v1.6.0)
+
+GigaClaw supports three setup modes: **Cloud**, **Local**, and **Hybrid**. Hybrid mode runs both a cloud LLM and a local Ollama instance, with per-message routing based on task complexity and privacy needs.
+
+### Setup
+
+`setup/setup-hybrid.mjs` — 6-step guided wizard:
+1. Cloud provider + API key (Anthropic, OpenAI, Google, or PragatiGPT)
+2. Ollama detection + local model selection (auto-detects running instance)
+3. Routing strategy selection
+4. Auth secret generation
+5. `.env` configuration write
+6. Summary and start instructions
+
+Wired into `setup/setup.mjs` as the first (recommended) option.
+
+### Env Variables (Hybrid-Specific)
+
+| Variable | Values | Purpose |
+|----------|--------|---------|
+| `GIGACLAW_MODE` | `hybrid` / `cloud` / `local` | Activates hybrid routing when set to `hybrid` |
+| `LOCAL_LLM_PROVIDER` | `ollama` | Local provider name |
+| `LOCAL_LLM_MODEL` | e.g. `llama3.2` | Local model name |
+| `HYBRID_ROUTING` | `auto` / `cost-optimized` / `quality-first` / `privacy-first` | Routing strategy |
+
+Standard `LLM_PROVIDER` and `LLM_MODEL` remain the **cloud/primary** provider.
+
+### Task Router (`lib/ai/task-router.js`)
+
+`routeTask(message, options)` → `{ provider, model, reason }`
+
+Decides cloud vs local per-message using a lightweight heuristic (no LLM call for routing itself):
+
+| Strategy | Default | Escalation |
+|----------|---------|------------|
+| **auto** | Scores complexity 0–1 via message length, code blocks, keyword signals. ≥0.6 → cloud, <0.6 → local, privacy signals → always local |
+| **cost-optimized** | Local | Cloud only when complexity ≥0.7 |
+| **quality-first** | Cloud | Local only for simple tasks (<0.3) or privacy-sensitive content |
+| **privacy-first** | Local | Cloud only when complexity ≥0.8 |
+
+Integrated into `chat()` and `chatStream()` in `lib/ai/index.js` — routing runs automatically when `GIGACLAW_MODE=hybrid`.
+
+### Provider Health (`lib/ai/provider-health.js`)
+
+- `checkOllamaHealth()` — HTTP check to `OLLAMA_BASE_URL/api/tags` with 30s TTL cache
+- `checkCloudProviderConfig(provider)` — validates API key env var is set
+- `getAllProviderStatus()` — returns availability of all 6 providers
+- `clearHealthCache()` — invalidate cache (e.g. after config changes)
+
+### Agent Caching (`lib/ai/agent.js`)
+
+Agents are cached by `provider:model` key (not singletons). This allows hybrid mode to maintain separate agent instances for cloud and local providers. `getJobAgent({ providerOverride, modelOverride })` creates/retrieves the correct agent. `resetAgent()` clears all cached agents.
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `setup/setup-hybrid.mjs` | Hybrid mode setup wizard |
+| `lib/ai/task-router.js` | Per-message cloud/local routing logic |
+| `lib/ai/provider-health.js` | Runtime provider availability checks |
+| `lib/ai/agent.js` | Multi-provider agent cache |
+| `lib/ai/index.js` | Hybrid routing integration in chat/chatStream |
+| `lib/chat/api.js` | Accepts `llmProvider`/`llmModel` from request body |
