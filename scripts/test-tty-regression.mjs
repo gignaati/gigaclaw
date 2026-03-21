@@ -707,9 +707,9 @@ test('Trust Ledger: AppSidebar includes Trust Ledger nav entry', () => {
   assert(sidebar.includes('Trust Ledger'), 'sidebar must show Trust Ledger label');
 });
 
-test('Trust Ledger: package.json exports trust-ledger/actions and version is 1.5.0', () => {
+test('Trust Ledger: package.json exports trust-ledger/actions and version is 1.6.0', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  assert(pkg.version === '1.5.0', `version must be 1.5.0, got ${pkg.version}`);
+  assert(pkg.version === '1.6.0', `version must be 1.6.0, got ${pkg.version}`);
   assert(pkg.exports['./trust-ledger/actions'], 'must export ./trust-ledger/actions');
 });
 
