@@ -167,7 +167,7 @@ Requires a visible Chrome window with remote debugging enabled.
 
 ## Where to find more skills
 
-**Skills repo**: `https://github.com/badlogic/pi-skills`
+**Skills repo**: `https://github.com/gignaati/gigaclaw`
 
 Available skills: brave-search, browser-tools, gccli (Google Calendar), gdcli (Google Drive), gmcli (Gmail), subagent, transcribe, vscode, youtube-transcript.
 
@@ -200,5 +200,5 @@ Skills run via bash. The agent has access to environment variables, which means 
 
 | Resource | URL |
 |----------|-----|
-| Skills repo | https://github.com/badlogic/pi-skills |
-| Skills format docs | https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/skills.md |
+| Skills repo | https://github.com/gignaati/gigaclaw |
+| Skills format docs | https://github.com/gignaati/gigaclaw/blob/main/docs/HOW_TO_BUILD_SKILLS.md |

@@ -152,7 +152,7 @@ export async function run() {
 
     // Retry loop
     let retries = 0;
-    while (!ollamaRunning && retries < 5) {
+    while (!ollamaRunning && retries < 3) {
       await clack.text({
         message: 'Press Enter once Ollama is running (or type "skip" to continue without it):',
       }).then(async (val) => {
