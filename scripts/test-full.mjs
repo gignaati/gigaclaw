@@ -801,6 +801,81 @@ test('install.ps1 exists for Windows', () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// SECTION N: Hybrid Mode (v1.6.0)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+section('N — Hybrid Mode');
+
+test('setup-hybrid.mjs passes syntax check', () => {
+  syntaxCheck('setup/setup-hybrid.mjs');
+});
+
+test('setup.mjs offers hybrid mode option', () => {
+  assertFileContains('setup/setup.mjs', 'hybrid');
+});
+
+test('Task router module exists', () => {
+  assertFileExists('lib/ai/task-router.js');
+});
+
+test('Task router passes syntax check', () => {
+  syntaxCheck('lib/ai/task-router.js');
+});
+
+test('Task router exports routeTask', () => {
+  assertFileContains('lib/ai/task-router.js', 'export async function routeTask');
+});
+
+test('Task router supports all 4 strategies', () => {
+  const content = readFile('lib/ai/task-router.js');
+  assert(content.includes("'auto'"), 'Missing auto strategy');
+  assert(content.includes("'cost-optimized'"), 'Missing cost-optimized strategy');
+  assert(content.includes("'quality-first'"), 'Missing quality-first strategy');
+  assert(content.includes("'privacy-first'"), 'Missing privacy-first strategy');
+});
+
+test('Provider health check module exists', () => {
+  assertFileExists('lib/ai/provider-health.js');
+});
+
+test('Provider health check passes syntax check', () => {
+  syntaxCheck('lib/ai/provider-health.js');
+});
+
+test('Provider health check exports checkOllamaHealth', () => {
+  assertFileContains('lib/ai/provider-health.js', 'export async function checkOllamaHealth');
+});
+
+test('Agent supports per-request model overrides', () => {
+  const content = readFile('lib/ai/agent.js');
+  assert(content.includes('providerOverride'), 'Agent should accept providerOverride');
+  assert(content.includes('agentCacheKey'), 'Agent should cache by provider:model key');
+});
+
+test('chatStream integrates hybrid routing', () => {
+  assertFileContains('lib/ai/index.js', 'routeTask');
+  assertFileContains('lib/ai/index.js', 'GIGACLAW_MODE');
+});
+
+test('Chat API passes llmProvider/llmModel from request', () => {
+  const content = readFile('lib/chat/api.js');
+  assert(content.includes('llmProvider'), 'Chat API should extract llmProvider from body');
+  assert(content.includes('llmModel'), 'Chat API should extract llmModel from body');
+});
+
+test('Hybrid setup writes GIGACLAW_MODE=hybrid', () => {
+  assertFileContains('setup/setup-hybrid.mjs', "GIGACLAW_MODE: 'hybrid'");
+});
+
+test('Hybrid setup writes LOCAL_LLM_PROVIDER', () => {
+  assertFileContains('setup/setup-hybrid.mjs', 'LOCAL_LLM_PROVIDER');
+});
+
+test('Hybrid setup writes HYBRID_ROUTING', () => {
+  assertFileContains('setup/setup-hybrid.mjs', 'HYBRID_ROUTING');
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Run everything
 // ═══════════════════════════════════════════════════════════════════════════════
 

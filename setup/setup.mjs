@@ -55,6 +55,11 @@ async function main() {
     message: 'How do you want to run GigaClaw?',
     options: [
       {
+        value: 'hybrid',
+        label: 'Hybrid Mode',
+        hint: 'Cloud + Local AI — smart routing, best of both worlds (recommended)',
+      },
+      {
         value: 'cloud',
         label: 'Cloud Mode',
         hint: 'GitHub + ngrok + Telegram — full features, internet required',
@@ -72,7 +77,10 @@ async function main() {
     process.exit(0);
   }
 
-  if (mode === 'cloud') {
+  if (mode === 'hybrid') {
+    const { run } = await import('./setup-hybrid.mjs');
+    await run();
+  } else if (mode === 'cloud') {
     const { run } = await import('./setup-cloud.mjs');
     await run();
   } else {
