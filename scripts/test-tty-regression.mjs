@@ -423,29 +423,29 @@ test('dropdown-menu.js compiled file uses span role=button in default trigger pa
   );
 });
 
-// ─── Test 27: install.sh has GIGABOT_SKIP_SETUP=1 bypass ─────────────────────────
-test('install.sh supports GIGABOT_SKIP_SETUP=1 bypass for CI/CD pipelines', () => {
+// ─── Test 27: install.sh has GIGACLAW_SKIP_SETUP=1 bypass ─────────────────────────
+test('install.sh supports GIGACLAW_SKIP_SETUP=1 bypass for CI/CD pipelines', () => {
   const installSh = fs.readFileSync(path.join(ROOT, 'install.sh'), 'utf8');
   assert(
-    installSh.includes('GIGABOT_SKIP_SETUP') || installSh.includes('GIGACLAW_SKIP_SETUP'),
+    installSh.includes('GIGACLAW_SKIP_SETUP') || installSh.includes('GIGACLAW_SKIP_SETUP'),
     'install.sh is missing the GIGACLAW_SKIP_SETUP=1 bypass'
   );
   assert(
-    installSh.includes('"${GIGABOT_SKIP_SETUP:-0}" = "1"') ||
+    installSh.includes('"${GIGACLAW_SKIP_SETUP:-0}" = "1"') ||
     installSh.includes('"${GIGACLAW_SKIP_SETUP:-0}" = "1"'),
     'install.sh GIGACLAW_SKIP_SETUP check must use ${GIGACLAW_SKIP_SETUP:-0} with default value'
   );
 });
 
-// ─── Test 28: install.ps1 has GIGABOT_SKIP_SETUP=1 bypass ────────────────────────
-test('install.ps1 supports GIGABOT_SKIP_SETUP=1 bypass for CI/CD pipelines', () => {
+// ─── Test 28: install.ps1 has GIGACLAW_SKIP_SETUP=1 bypass ────────────────────────
+test('install.ps1 supports GIGACLAW_SKIP_SETUP=1 bypass for CI/CD pipelines', () => {
   const installPs1 = fs.readFileSync(path.join(ROOT, 'install.ps1'), 'utf8');
   assert(
-    installPs1.includes('GIGABOT_SKIP_SETUP') || installPs1.includes('GIGACLAW_SKIP_SETUP'),
+    installPs1.includes('GIGACLAW_SKIP_SETUP') || installPs1.includes('GIGACLAW_SKIP_SETUP'),
     'install.ps1 is missing the GIGACLAW_SKIP_SETUP bypass'
   );
   assert(
-    installPs1.includes("$env:GIGABOT_SKIP_SETUP -eq '1'") ||
+    installPs1.includes("$env:GIGACLAW_SKIP_SETUP -eq '1'") ||
     installPs1.includes("$env:GIGACLAW_SKIP_SETUP -eq '1'"),
     "install.ps1 GIGACLAW_SKIP_SETUP check must use \$env:GIGACLAW_SKIP_SETUP -eq '1'"
   );
