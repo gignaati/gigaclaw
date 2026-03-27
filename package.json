@@ -1,6 +1,6 @@
 {
   "name": "gigaclaw",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "type": "module",
   "description": "GigaClaw — Gignaati's autonomous AI agent platform. Build, deploy, and run AI agents 24/7 with a two-layer architecture: Next.js Event Handler + Docker Agent. India-first, edge-native AI.",
   "bin": {
@@ -63,6 +63,42 @@
     "./trust-ledger/actions": {
       "import": "./lib/chat/trust-ledger-actions.js",
       "default": "./lib/chat/trust-ledger-actions.js"
+    },
+    "./rag": {
+      "import": "./lib/rag/index.js",
+      "default": "./lib/rag/index.js"
+    },
+    "./rag/chunker": {
+      "import": "./lib/rag/chunker.js",
+      "default": "./lib/rag/chunker.js"
+    },
+    "./rag/embeddings": {
+      "import": "./lib/rag/embeddings.js",
+      "default": "./lib/rag/embeddings.js"
+    },
+    "./rag/vector-store": {
+      "import": "./lib/rag/vector-store.js",
+      "default": "./lib/rag/vector-store.js"
+    },
+    "./rag/hybrid-search": {
+      "import": "./lib/rag/hybrid-search.js",
+      "default": "./lib/rag/hybrid-search.js"
+    },
+    "./rag/watcher": {
+      "import": "./lib/rag/watcher.js",
+      "default": "./lib/rag/watcher.js"
+    },
+    "./connectors": {
+      "import": "./lib/connectors/index.js",
+      "default": "./lib/connectors/index.js"
+    },
+    "./connectors/filesystem": {
+      "import": "./lib/connectors/filesystem.js",
+      "default": "./lib/connectors/filesystem.js"
+    },
+    "./brand": {
+      "import": "./lib/brand.js",
+      "default": "./lib/brand.js"
     },
     "./package.json": "./package.json"
   },

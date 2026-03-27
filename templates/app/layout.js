@@ -1,17 +1,20 @@
 import './globals.css';
 import { ThemeProvider } from './components/theme-provider';
+import brandJson from '../../config/brand.json' assert { type: 'json' };
+
+const brand = brandJson;
 
 export const metadata = {
-  title: 'GigaClaw — Autonomous AI Agent by Gignaati',
-  description: 'GigaClaw is an autonomous AI agent platform by Gignaati. Build, deploy, and run AI agents 24/7 with India-first, edge-native AI. Supports PragatiGPT, Claude, GPT, Gemini, and local models via Ollama.',
-  keywords: ['AI agent', 'autonomous agent', 'Gignaati', 'PragatiGPT', 'India AI', 'edge AI', 'GigaClaw'],
-  authors: [{ name: 'Gignaati', url: 'https://www.gignaati.com' }],
-  creator: 'Gignaati',
-  publisher: 'Gignaati',
+  title: `${brand.name} — Autonomous AI Agent by ${brand.company}`,
+  description: brand.description,
+  keywords: brand.keywords,
+  authors: [{ name: brand.company, url: brand.companyUrl }],
+  creator: brand.company,
+  publisher: brand.company,
   openGraph: {
-    title: 'GigaClaw — Autonomous AI Agent by Gignaati',
+    title: `${brand.name} — Autonomous AI Agent by ${brand.company}`,
     description: 'Build, deploy, and run AI agents 24/7 with India-first, edge-native AI.',
-    siteName: 'GigaClaw by Gignaati',
+    siteName: `${brand.name} by ${brand.company}`,
     type: 'website',
   },
   robots: {
