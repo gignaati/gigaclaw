@@ -3,6 +3,7 @@
 import { execSync, execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import { createDirLink } from '../setup/lib/fs-utils.mjs';
 
@@ -81,9 +82,13 @@ function parseUpgradeTarget(arg) {
 
 function printUsage() {
   console.log(`
-Usage: gigaclaw <command>
+Usage: gigaclaw [command]
 
-Commands:
+One-command bootstrap (recommended):
+  npx gigaclaw@latest               Full auto-setup: scaffold + install + configure + start
+  npx gigaclaw@latest --interactive  Same, but with interactive setup wizard
+
+Manual commands:
   init                              Scaffold a new gigaclaw project
   upgrade|update [@beta|version]    Upgrade gigaclaw (install, init, build, commit, push)
   setup                             Run interactive setup wizard
@@ -94,7 +99,7 @@ Commands:
   set-agent-secret <KEY> [VALUE]    Set a GitHub secret with AGENT_ prefix (also updates .env)
   set-agent-llm-secret <KEY> [VALUE]  Set a GitHub secret with AGENT_LLM_ prefix
   set-var <KEY> [VALUE]             Set a GitHub repository variable
-  --version, -v                     Show gigaclaw version
+   --version, -v                     Show gigaclaw version
 
 Powered by Gignaati — https://www.gignaati.com
 `);
@@ -307,10 +312,9 @@ async function init() {
     console.log('  To reset to default:  npx gigaclaw reset <file>');
   }
 
-  // Run npm install
+  // Run npm install with retry-safe logic
   console.log('\nInstalling dependencies...\n');
-  // shell:true is required on Windows so npm resolves via PATH (npm.cmd)
-  execSync('npm install', { stdio: 'inherit', cwd, shell: true });
+  await installDependenciesWithRetry(cwd);
 
   // Create or update .env with auto-generated infrastructure values
   const envPath = path.join(cwd, '.env');
@@ -346,6 +350,51 @@ GIGACLAW_VERSION=${version}
   }
 
   console.log('\nDone! Run: npm run setup\n');
+}
+
+/**
+ * Retry-safe npm install with cache clean, exponential backoff, and pnpm fallback.
+ * Used by both `gigaclaw init` and the one-command bootstrap.
+ */
+async function installDependenciesWithRetry(cwd) {
+  const MAX_ATTEMPTS = 3;
+  const BACKOFF = [2000, 5000, 10000];
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      if (attempt > 1) {
+        console.log(`  Cleaning npm cache before retry (attempt ${attempt})...`);
+        try { execSync('npm cache clean --force', { stdio: 'pipe', cwd, shell: true }); } catch (_) {}
+        const nmPath = path.join(cwd, 'node_modules');
+        const lockPath = path.join(cwd, 'package-lock.json');
+        if (fs.existsSync(nmPath)) {
+          console.log('  Removing node_modules...');
+          fs.rmSync(nmPath, { recursive: true, force: true });
+        }
+        if (fs.existsSync(lockPath)) fs.rmSync(lockPath);
+        const delay = BACKOFF[attempt - 2] || 10000;
+        console.log(`  Waiting ${delay / 1000}s...`);
+        await sleep(delay);
+      }
+      execSync('npm install --no-audit --no-fund --prefer-online', { stdio: 'inherit', cwd, shell: true });
+      return; // success
+    } catch (err) {
+      console.warn(`  ⚠  npm install attempt ${attempt} failed: ${err.message.split('\n')[0]}`);
+    }
+  }
+
+  // pnpm fallback
+  console.warn('  All npm attempts failed. Trying pnpm fallback...');
+  try {
+    execSync('pnpm --version', { stdio: 'pipe', shell: true });
+    execSync('pnpm install --prefer-offline', { stdio: 'inherit', cwd, shell: true });
+    console.log('  ✓ Dependencies installed via pnpm.');
+    return;
+  } catch (_) {}
+
+  console.error('  ✗ Dependency installation failed. Check your network and run: npm install');
+  process.exit(1);
 }
 
 /**
@@ -798,6 +847,15 @@ async function setVar(key, value) {
 }
 
 switch (command) {
+  case undefined:
+  case null:
+  case '':
+  case '--interactive': {
+    // No subcommand — run one-command bootstrap
+    const { bootstrap } = await import('./bootstrap.mjs');
+    await bootstrap();
+    break;
+  }
   case 'init':
     await init();
     break;
@@ -831,5 +889,5 @@ switch (command) {
     break;
   default:
     printUsage();
-    process.exit(command ? 1 : 0);
+    process.exit(1);
 }

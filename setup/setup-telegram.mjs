@@ -3,6 +3,7 @@
 import chalk from 'chalk';
 import open from 'open';
 import * as clack from '@clack/prompts';
+import { brand } from '../lib/brand.js';
 
 import { checkPrerequisites } from './lib/prerequisites.mjs';
 import { setVariables, setSecrets } from './lib/github.mjs';
@@ -19,7 +20,7 @@ const logo = `
 / /_/ / / /_/ / /_/ / /_/ / /_/ / /_  
 \\____/_/\\__, /\\__,_/_____/\\____/\\__/  
         /____/                         
-  India's Autonomous AI Agent · Powered by Gignaati
+  ${brand.taglineFull}
 `;
 
 async function main() {

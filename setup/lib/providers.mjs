@@ -1,7 +1,7 @@
 /**
- * Provider registry — single source of truth for GigaClaw LLM providers.
+ * Provider registry — single source of truth for platform LLM providers.
  *
- * GigaClaw supports 6 providers:
+ * Platform supports 6 providers:
  *   anthropic   — Claude (Anthropic)
  *   openai      — GPT (OpenAI)
  *   google      — Gemini (Google)

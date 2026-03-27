@@ -1025,6 +1025,95 @@ test('SHARE-11: components/index.js exports ShareButton and ShareDialog', () => 
   assert(src.includes('ShareDialog'), 'components/index.js must export ShareDialog');
 });
 
+// ─── v1.9.0: One-Command Bootstrap ─────────────────────────────────────────
+
+test('v1.9.0: bin/bootstrap.mjs exists and passes syntax check', () => {
+  const bootstrapPath = path.join(ROOT, 'bin', 'bootstrap.mjs');
+  assert(fs.existsSync(bootstrapPath), 'bin/bootstrap.mjs must exist');
+  execSync(`node --check ${bootstrapPath}`, { stdio: 'pipe' });
+});
+
+test('v1.9.0: bin/scaffold.mjs exists and passes syntax check', () => {
+  const scaffoldPath = path.join(ROOT, 'bin', 'scaffold.mjs');
+  assert(fs.existsSync(scaffoldPath), 'bin/scaffold.mjs must exist');
+  execSync(`node --check ${scaffoldPath}`, { stdio: 'pipe' });
+});
+
+test('v1.9.0: bin/cli.js routes no-command to bootstrap (case undefined)', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'cli.js'), 'utf8');
+  assert(src.includes("case undefined:"), 'cli.js must handle undefined command → bootstrap');
+  assert(src.includes("bootstrap.mjs"), 'cli.js must import bootstrap.mjs');
+  assert(src.includes("await bootstrap()"), 'cli.js must await bootstrap()');
+});
+
+test('v1.9.0: bin/cli.js routes --interactive flag to bootstrap', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'cli.js'), 'utf8');
+  assert(src.includes("case '--interactive':"), 'cli.js must handle --interactive → bootstrap');
+});
+
+test('v1.9.0: bin/bootstrap.mjs has retry-safe installDependencies with MAX_ATTEMPTS=3', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('MAX_ATTEMPTS = 3'), 'bootstrap must have MAX_ATTEMPTS = 3');
+  assert(src.includes('npm cache clean --force'), 'bootstrap must clean npm cache on retry');
+  assert(src.includes('pnpm'), 'bootstrap must have pnpm fallback');
+  assert(src.includes('exponential') || src.includes('BACKOFF'), 'bootstrap must have exponential backoff');
+});
+
+test('v1.9.0: bin/bootstrap.mjs auto-detects Ollama and Node/Docker environment', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('detectEnvironment'), 'bootstrap must have detectEnvironment()');
+  assert(src.includes('ollama'), 'bootstrap must check Ollama');
+  assert(src.includes('docker'), 'bootstrap must check Docker');
+  assert(src.includes('process.version'), 'bootstrap must check Node version');
+});
+
+test('v1.9.0: bin/bootstrap.mjs writes .env with smart defaults (no wizard)', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('runSmartSetup'), 'bootstrap must have runSmartSetup()');
+  assert(src.includes('GIGACLAW_MODE'), 'bootstrap must write GIGACLAW_MODE');
+  assert(src.includes('claude-sonnet'), 'bootstrap must default to Claude Sonnet');
+  assert(src.includes('HYBRID_ROUTING'), 'bootstrap must write HYBRID_ROUTING');
+  assert(src.includes('AUTH_SECRET'), 'bootstrap must write AUTH_SECRET');
+});
+
+test('v1.9.0: bin/bootstrap.mjs auto-starts dev server and opens browser', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('startDevServer'), 'bootstrap must have startDevServer()');
+  assert(src.includes('openBrowser'), 'bootstrap must have openBrowser()');
+  assert(src.includes('xdg-open') || src.includes('open http'), 'bootstrap must handle Linux browser open');
+  assert(src.includes('start http') || src.includes('win32'), 'bootstrap must handle Windows browser open');
+  assert(src.includes('localhost:3000'), 'bootstrap must target localhost:3000');
+});
+
+test('v1.9.0: bin/bootstrap.mjs detects server ready via log pattern', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('Local:') && src.includes('localhost:3000'), 'bootstrap must detect server ready via log');
+  assert(src.includes('Ready in') || src.includes('✓ Ready'), 'bootstrap must detect turbopack ready signal');
+});
+
+test('v1.9.0: bin/cli.js installDependenciesWithRetry uses --no-audit --no-fund --prefer-online', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'cli.js'), 'utf8');
+  assert(src.includes('--no-audit'), 'cli.js install must use --no-audit');
+  assert(src.includes('--no-fund'), 'cli.js install must use --no-fund');
+  assert(src.includes('--prefer-online'), 'cli.js install must use --prefer-online');
+});
+
+test('v1.9.0: migration 0005 uses statement-breakpoint separators (not bare semicolons)', () => {
+  const sql = fs.readFileSync(path.join(ROOT, 'drizzle', '0005_knowledge_base_share_tokens.sql'), 'utf8');
+  assert(sql.includes('--> statement-breakpoint'), 'migration 0005 must use --> statement-breakpoint separator');
+  // Count: should have 3 breakpoints (between CREATE TABLE and 3 CREATE INDEX statements)
+  const breakpoints = (sql.match(/--> statement-breakpoint/g) || []).length;
+  assert(breakpoints >= 3, `migration 0005 must have at least 3 breakpoints, found ${breakpoints}`);
+});
+
+test('v1.9.0: bin/bootstrap.mjs has structured phase logger (PHASES object)', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('const PHASES'), 'bootstrap must define PHASES object');
+  assert(src.includes('logOk'), 'bootstrap must have logOk helper');
+  assert(src.includes('logWarn'), 'bootstrap must have logWarn helper');
+  assert(src.includes('logStep'), 'bootstrap must have logStep helper');
+});
+
 // ─── Run all tests and print final summary ───────────────────────────────────
 runAll().then(() => {
   const total = passed + failed + skipped;

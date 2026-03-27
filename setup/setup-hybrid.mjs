@@ -3,6 +3,7 @@ import path from 'path';
 import os from 'os';
 import * as clack from '@clack/prompts';
 import { PROVIDERS } from './lib/providers.mjs';
+import { brand } from '../lib/brand.js';
 import { loadEnvFile } from './lib/env.mjs';
 import { updateEnvVariable } from './lib/auth.mjs';
 
@@ -98,7 +99,7 @@ export async function run() {
       '  Cloud Provider  — handles complex reasoning, coding, long-context tasks',
       '  Local Ollama    — handles simple queries, drafts, privacy-sensitive work',
       '',
-      'GigaClaw\'s primary model decides which provider to use per-task,',
+      `${brand.name}'s primary model decides which provider to use per-task,`,
       'based on complexity, privacy needs, and provider availability.',
       '',
       'You need:',
@@ -220,7 +221,7 @@ export async function run() {
 
     if (!ollamaRunning) {
       clack.log.info('Hybrid mode will work cloud-only for now. You can start Ollama later.');
-      clack.log.info('GigaClaw automatically detects Ollama at runtime — no reconfiguration needed.');
+      clack.log.info('${brand.name} automatically detects Ollama at runtime — no reconfiguration needed.');
     }
   }
 
@@ -274,7 +275,7 @@ export async function run() {
   clack.log.step(`[${++currentStep}/${TOTAL_STEPS}] Task Routing Strategy`);
 
   clack.log.info(
-    'Choose how GigaClaw decides between cloud and local for each task.'
+    `Choose how ${brand.name} decides between cloud and local for each task.`
   );
 
   const routingStrategy = handleCancel(await clack.select({
@@ -364,7 +365,7 @@ export async function run() {
       break;
     case 'cost-optimized':
       summaryLines.push('  All tasks start on Local. If the task is too complex or fails,');
-      summaryLines.push('  GigaClaw automatically escalates to Cloud.');
+      summaryLines.push('  ${brand.name} automatically escalates to Cloud.');
       break;
     case 'quality-first':
       summaryLines.push('  All tasks default to Cloud for best quality.');
@@ -383,7 +384,7 @@ export async function run() {
     '',
     ollamaEnabled
       ? 'Ollama is ready. Both providers are active.'
-      : 'Start Ollama later — GigaClaw detects it automatically at runtime.'
+      : 'Start Ollama later — ${brand.name} detects it automatically at runtime.'
   );
 
   clack.note(summaryLines.join('\n'), 'Hybrid Mode Configuration');

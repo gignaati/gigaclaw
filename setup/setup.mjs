@@ -35,6 +35,7 @@ if (!process.stdin.isTTY) {
 
 import chalk from 'chalk';
 import * as clack from '@clack/prompts';
+import { brand } from '../lib/brand.js';
 
 const logo = `
    _______             ________
@@ -43,16 +44,16 @@ const logo = `
 / /_/ / / /_/ / /_/ / /___/ / /_/ / |/ |/ /
 \\____/_/\\__, /\\__,_/\\____/_/\\____/|__/|__/
        /____/
-  India's Autonomous AI Agent · Powered by Gignaati
+  ${brand.taglineFull}
 `;
 
 async function main() {
   console.log(chalk.cyan(logo));
 
-  clack.intro('GigaClaw Setup Wizard');
+  clack.intro(`${brand.name} Setup Wizard`);
 
   const mode = await clack.select({
-    message: 'How do you want to run GigaClaw?',
+    message: `How do you want to run ${brand.name}?`,
     options: [
       {
         value: 'hybrid',

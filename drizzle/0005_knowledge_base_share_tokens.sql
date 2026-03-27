@@ -14,7 +14,9 @@ CREATE TABLE IF NOT EXISTS `share_tokens` (
   `revoked`      integer NOT NULL DEFAULT 0,
   `created_at`   integer NOT NULL
 );
-
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS `share_tokens_user_idx`    ON `share_tokens` (`user_id`);
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS `share_tokens_doc_idx`     ON `share_tokens` (`doc_path`);
+--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS `share_tokens_revoked_idx` ON `share_tokens` (`revoked`);
