@@ -771,7 +771,7 @@ test('v1.7 lib/brand.js exports brand accessor and imports brand.json', () => {
 test('v1.7 package.json exports ./brand module', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   assert(pkg.exports['./brand'], 'package.json must export ./brand');
-  assert(pkg.version === '1.7.0', `package.json version must be 1.7.0, got ${pkg.version}`);
+  assert(pkg.version === '1.8.1', `package.json version must be 1.8.1, got ${pkg.version}`);
 });
 
 // ─── v1.7.0: RAG Engine ──────────────────────────────────────────────────────
@@ -940,6 +940,89 @@ test('KB-10: package.json exports ./knowledge-base/actions, ./rag, ./connectors'
   assert(pkg.exports['./knowledge-base/actions'], 'package.json must export ./knowledge-base/actions');
   assert(pkg.exports['./rag'], 'package.json must export ./rag');
   assert(pkg.exports['./connectors'], 'package.json must export ./connectors');
+});
+
+// ─── v1.8.1: Document Sharing Feature ──────────────────────────────────────
+
+test('SHARE-01: drizzle migration 0005 creates share_tokens table', () => {
+  const sql = fs.readFileSync(path.join(ROOT, 'drizzle/0005_knowledge_base_share_tokens.sql'), 'utf8');
+  assert(sql.includes('CREATE TABLE'), 'migration must create a table');
+  assert(sql.includes('share_tokens'), 'migration must create share_tokens table');
+  assert(sql.includes('expires_at'), 'share_tokens must have expires_at column');
+  assert(sql.includes('revoked'), 'share_tokens must have revoked column');
+  assert(sql.includes('access_count'), 'share_tokens must have access_count column');
+  assert(sql.includes('permission'), 'share_tokens must have permission column');
+});
+
+test('SHARE-02: drizzle journal includes migration 0005', () => {
+  const journal = JSON.parse(fs.readFileSync(path.join(ROOT, 'drizzle/meta/_journal.json'), 'utf8'));
+  const tags = journal.entries.map(e => e.tag);
+  assert(tags.includes('0005_knowledge_base_share_tokens'), 'journal must include migration 0005');
+});
+
+test('SHARE-03: db/schema.js defines shareTokens table', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/db/schema.js'), 'utf8');
+  assert(src.includes('shareTokens'), 'schema.js must define shareTokens table');
+  assert(src.includes('expires_at') || src.includes('expiresAt'), 'shareTokens must have expiry field');
+  assert(src.includes('revoked'), 'shareTokens must have revoked field');
+});
+
+test('SHARE-04: share-actions.js exports all required functions', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/share-actions.js'), 'utf8');
+  assert(src.includes('export async function createShareLink'), 'must export createShareLink');
+  assert(src.includes('export async function listShareLinks'), 'must export listShareLinks');
+  assert(src.includes('export async function revokeShareLink'), 'must export revokeShareLink');
+  assert(src.includes('export async function getSharedDocument'), 'must export getSharedDocument');
+  assert(src.includes('export async function getShareStats'), 'must export getShareStats');
+});
+
+test('SHARE-05: share-actions.js has path traversal protection', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/share-actions.js'), 'utf8');
+  assert(src.includes('gigaclaw-docs'), 'must sandbox paths to ~/gigaclaw-docs/');
+  assert(src.includes('Access denied'), 'must throw on path traversal attempt');
+});
+
+test('SHARE-06: share-actions.js validates token state (revoked/expired/exhausted)', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/share-actions.js'), 'utf8');
+  assert(src.includes('revoked'), 'must check revoked state');
+  assert(src.includes('expires_at'), 'must check expiry');
+  assert(src.includes('max_access'), 'must check access cap');
+  assert(src.includes('access_count + 1'), 'must increment access count');
+});
+
+test('SHARE-07: share-dialog.jsx exports ShareButton and ShareDialog', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/components/share-dialog.jsx'), 'utf8');
+  assert(src.includes('export function ShareDialog'), 'must export ShareDialog');
+  assert(src.includes('export function ShareButton'), 'must export ShareButton');
+});
+
+test('SHARE-08: share-dialog.jsx has copy-to-clipboard, permission picker, expiry picker', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/components/share-dialog.jsx'), 'utf8');
+  assert(src.includes('clipboard'), 'must have clipboard copy functionality');
+  assert(src.includes('permission'), 'must have permission picker');
+  assert(src.includes('expiresInDays'), 'must have expiry picker');
+  assert(src.includes('maxAccess'), 'must have max access input');
+  assert(src.includes('revokeShareLink'), 'must call revokeShareLink for revoke action');
+});
+
+test('SHARE-09: public share viewer page exists at templates/app/share/[token]/page.js', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'templates/app/share/[token]/page.js'), 'utf8');
+  assert(src.includes('getSharedDocument'), 'viewer must call getSharedDocument');
+  assert(src.includes('ErrorView'), 'viewer must have error state component');
+  assert(src.includes('noindex'), 'viewer must set noindex robots meta');
+  assert(src.includes('DocumentViewer'), 'viewer must have DocumentViewer component');
+});
+
+test('SHARE-10: package.json exports ./share-actions and ./share-dialog', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  assert(pkg.exports['./share-actions'], 'package.json must export ./share-actions');
+  assert(pkg.exports['./share-dialog'], 'package.json must export ./share-dialog');
+});
+
+test('SHARE-11: components/index.js exports ShareButton and ShareDialog', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/components/index.js'), 'utf8');
+  assert(src.includes('ShareButton'), 'components/index.js must export ShareButton');
+  assert(src.includes('ShareDialog'), 'components/index.js must export ShareDialog');
 });
 
 // ─── Run all tests and print final summary ───────────────────────────────────

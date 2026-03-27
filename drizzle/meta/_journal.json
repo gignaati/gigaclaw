@@ -36,6 +36,13 @@
       "when": 1742500800000,
       "tag": "0004_trust_ledger_audit_log",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1743033600000,
+      "tag": "0005_knowledge_base_share_tokens",
+      "breakpoints": true
     }
   ]
 }
