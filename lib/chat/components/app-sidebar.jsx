@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { BRAND_NAME } from '../../brand.js';
 import { CirclePlusIcon, PanelLeftIcon, MessageIcon, BellIcon, SwarmIcon, ArrowUpCircleIcon, LifeBuoyIcon, GitPullRequestIcon, ShieldIcon } from './icons.js';
 import { getUnreadNotificationCount, getPullRequestCount, getAppVersion } from '../actions.js';
 import { SidebarHistory } from './sidebar-history.js';
@@ -63,7 +64,7 @@ export function AppSidebar({ user }) {
         {/* Top row: brand name + toggle icon (open) or just toggle icon (collapsed) */}
         <div className={collapsed ? 'flex justify-center' : 'flex items-center justify-between'}>
           {!collapsed && (
-            <span className="px-2 font-semibold text-lg">GigaClaw{version && <span className="text-[11px] font-normal text-muted-foreground"> v{version}</span>}</span>
+            <span className="px-2 font-semibold text-lg">{BRAND_NAME}{version && <span className="text-[11px] font-normal text-muted-foreground"> v{version}</span>}</span>
           )}
           <Tooltip>
             <TooltipTrigger asChild>

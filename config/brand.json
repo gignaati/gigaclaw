@@ -1,0 +1,23 @@
+{
+  "name": "GigaClaw",
+  "shortName": "GigaClaw",
+  "nameLower": "gigaclaw",
+  "tagline": "India's Autonomous AI Agent",
+  "taglineFull": "India's Autonomous AI Agent · Powered by Gignaati",
+  "description": "GigaClaw is an autonomous AI agent platform by Gignaati. Build, deploy, and run AI agents 24/7 with India-first, edge-native AI. Supports PragatiGPT, Claude, GPT, Gemini, and local models via Ollama.",
+  "company": "Gignaati",
+  "companyUrl": "https://www.gignaati.com",
+  "supportEmail": "support@gignaati.com",
+  "packageName": "gigaclaw",
+  "npmInstallCmd": "npx gigaclaw@latest",
+  "localPort": 3000,
+  "keywords": ["AI agent", "autonomous agent", "Gignaati", "PragatiGPT", "India AI", "edge AI", "GigaClaw"],
+  "social": {
+    "github": "https://github.com/gignaati/gigaclaw",
+    "website": "https://gigaclaw.gignaati.com"
+  },
+  "pragatigpt": {
+    "label": "PragatiGPT (Gignaati — India-first)",
+    "description": "PragatiGPT — India-first, edge-native AI by Gignaati"
+  }
+}

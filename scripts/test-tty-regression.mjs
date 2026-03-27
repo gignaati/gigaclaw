@@ -707,9 +707,9 @@ test('Trust Ledger: AppSidebar includes Trust Ledger nav entry', () => {
   assert(sidebar.includes('Trust Ledger'), 'sidebar must show Trust Ledger label');
 });
 
-test('Trust Ledger: package.json exports trust-ledger/actions and version is 1.6.0', () => {
+test('Trust Ledger: package.json exports trust-ledger/actions', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
-  assert(pkg.version === '1.6.0', `version must be 1.6.0, got ${pkg.version}`);
+  assert(pkg.version >= '1.6.0', `version must be 1.6.0 or later, got ${pkg.version}`);
   assert(pkg.exports['./trust-ledger/actions'], 'must export ./trust-ledger/actions');
 });
 
@@ -751,6 +751,123 @@ test('v1.5.1: install.ps1 verifies node_modules/gigaclaw and retries on failure'
     ps1.includes('--prefer-online'),
     'install.ps1 must retry npm install --prefer-online on missing package'
   );
+});
+
+// ─── v1.7.0: Brand Abstraction ─────────────────────────────────────────────
+test('v1.7 config/brand.json exists with required fields', () => {
+  const brand = JSON.parse(fs.readFileSync(path.join(ROOT, 'config/brand.json'), 'utf8'));
+  assert(brand.name, 'brand.json must have name field');
+  assert(brand.tagline, 'brand.json must have tagline field');
+  assert(brand.shortName, 'brand.json must have shortName field');
+  assert(brand.supportEmail, 'brand.json must have supportEmail field');
+});
+
+test('v1.7 lib/brand.js exports brand accessor and imports brand.json', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/brand.js'), 'utf8');
+  assert(src.includes('brand.json'), 'lib/brand.js must import from config/brand.json');
+  assert(src.includes('export'), 'lib/brand.js must export brand fields or accessor');
+});
+
+test('v1.7 package.json exports ./brand module', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  assert(pkg.exports['./brand'], 'package.json must export ./brand');
+  assert(pkg.version === '1.7.0', `package.json version must be 1.7.0, got ${pkg.version}`);
+});
+
+// ─── v1.7.0: RAG Engine ──────────────────────────────────────────────────────
+test('v1.7 lib/rag/chunker.js exports chunkDocument and estimateTokens with overlap', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/rag/chunker.js'), 'utf8');
+  assert(src.includes('export function chunkDocument'), 'chunker must export chunkDocument');
+  assert(src.includes('export function estimateTokens'), 'chunker must export estimateTokens');
+  assert(src.includes('overlapTokens'), 'chunker must support overlap');
+});
+
+test('v1.7 lib/rag/extractors.js supports PDF, DOCX, HTML with graceful fallback', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/rag/extractors.js'), 'utf8');
+  assert(src.includes('export async function extractFile'), 'extractors must export extractFile');
+  assert(src.includes('export const SUPPORTED_EXTENSIONS'), 'extractors must export SUPPORTED_EXTENSIONS');
+  assert(src.includes('.pdf') && src.includes('.docx') && src.includes('.html'), 'extractors must support PDF, DOCX, HTML');
+  assert(src.includes('not installed') || src.includes('graceful'), 'extractors must have graceful fallback for optional deps');
+});
+
+test('v1.7 lib/rag/embeddings.js defaults to Ollama nomic-embed-text for local provider', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/rag/embeddings.js'), 'utf8');
+  assert(src.includes('export async function generateEmbeddings'), 'embeddings must export generateEmbeddings');
+  assert(src.includes('export async function embedQuery'), 'embeddings must export embedQuery');
+  assert(src.includes('nomic-embed-text'), 'embeddings must default to nomic-embed-text');
+  assert(src.includes('localhost:11434') || src.includes('OLLAMA_BASE_URL'), 'embeddings must use Ollama for local');
+});
+
+test('v1.7 lib/rag/vector-store.js uses SQLite with cosine similarity', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/rag/vector-store.js'), 'utf8');
+  assert(src.includes('export function insertChunks'), 'vector-store must export insertChunks');
+  assert(src.includes('export function searchVectors'), 'vector-store must export searchVectors');
+  assert(src.includes('export function deleteSource'), 'vector-store must export deleteSource');
+  assert(src.includes('cosineSimilarity'), 'vector-store must implement cosine similarity');
+  assert(src.includes('better-sqlite3'), 'vector-store must use SQLite');
+});
+
+test('v1.7 lib/rag/hybrid-search.js implements BM25 + RRF fusion', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/rag/hybrid-search.js'), 'utf8');
+  assert(src.includes('export async function hybridSearch'), 'hybrid-search must export hybridSearch');
+  assert(src.includes('Bm25') || src.includes('bm25') || src.includes('BM25'), 'hybrid-search must implement BM25');
+  assert(src.includes('Fusion') || src.includes('fusion') || src.includes('RRF'), 'hybrid-search must implement RRF fusion');
+});
+
+test('v1.7 lib/rag/watcher.js exports startWatcher, stopWatcher, ingestFile', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/rag/watcher.js'), 'utf8');
+  assert(src.includes('export async function startWatcher'), 'watcher must export startWatcher');
+  assert(src.includes('export function stopWatcher'), 'watcher must export stopWatcher');
+  assert(src.includes('export async function ingestFile'), 'watcher must export ingestFile');
+  assert(src.includes('gigaclaw-docs') || src.includes('RAG_DOCS_DIR'), 'watcher must use gigaclaw-docs as default dir');
+});
+
+test('v1.7 lib/rag/index.js exports ingest, search, deleteKnowledge, ragQuery, buildRagContext', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/rag/index.js'), 'utf8');
+  assert(src.includes('export async function ingest'), 'rag/index must export ingest');
+  assert(src.includes('export async function search'), 'rag/index must export search');
+  assert(src.includes('export function deleteKnowledge'), 'rag/index must export deleteKnowledge');
+  assert(src.includes('export async function ragQuery'), 'rag/index must export ragQuery');
+  assert(src.includes('export function buildRagContext'), 'rag/index must export buildRagContext');
+});
+
+test('v1.7 package.json exports all RAG submodules', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  const required = ['./rag', './rag/chunker', './rag/embeddings', './rag/vector-store', './rag/hybrid-search', './rag/watcher'];
+  const missing = required.filter(k => !pkg.exports[k]);
+  assert(missing.length === 0, `package.json missing exports: ${missing.join(', ')}`);
+});
+
+// ─── v1.7.0: Connector Framework ─────────────────────────────────────────────
+test('v1.7 lib/connectors/base.js defines BaseConnector with full interface', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/connectors/base.js'), 'utf8');
+  assert(src.includes('export class BaseConnector'), 'base must export BaseConnector');
+  assert(src.includes('async connect()'), 'BaseConnector must define connect()');
+  assert(src.includes('async listFiles('), 'BaseConnector must define listFiles()');
+  assert(src.includes('async fetchFile('), 'BaseConnector must define fetchFile()');
+  assert(src.includes('async sync('), 'BaseConnector must define sync()');
+  assert(src.includes('async disconnect()'), 'BaseConnector must define disconnect()');
+});
+
+test('v1.7 lib/connectors/filesystem.js extends BaseConnector with gigaclaw-docs default', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/connectors/filesystem.js'), 'utf8');
+  assert(src.includes('extends BaseConnector'), 'FilesystemConnector must extend BaseConnector');
+  assert(src.includes('gigaclaw-docs') || src.includes('RAG_DOCS_DIR'), 'FilesystemConnector must default to gigaclaw-docs');
+  assert(src.includes('async listFiles'), 'FilesystemConnector must implement listFiles');
+  assert(src.includes('async fetchFile'), 'FilesystemConnector must implement fetchFile');
+});
+
+test('v1.7 lib/connectors/registry.js registers FilesystemConnector and exports createConnector', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/connectors/registry.js'), 'utf8');
+  assert(src.includes('export function createConnector'), 'registry must export createConnector');
+  assert(src.includes('export function listConnectors'), 'registry must export listConnectors');
+  assert(src.includes('FilesystemConnector'), 'registry must register FilesystemConnector');
+});
+
+test('v1.7 package.json exports ./connectors and ./connectors/filesystem', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  assert(pkg.exports['./connectors'], 'package.json must export ./connectors');
+  assert(pkg.exports['./connectors/filesystem'], 'package.json must export ./connectors/filesystem');
 });
 
 // ─── Run all tests and print final summary ───────────────────────────────────
