@@ -870,6 +870,78 @@ test('v1.7 package.json exports ./connectors and ./connectors/filesystem', () =>
   assert(pkg.exports['./connectors/filesystem'], 'package.json must export ./connectors/filesystem');
 });
 
+// ─── v1.8.0 Knowledge Base UI Tests ────────────────────────────────────────
+test('KB-01: knowledge-base-actions.js exists and exports required functions', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/knowledge-base-actions.js'), 'utf8');
+  assert(src.includes('export async function listDocuments'), 'must export listDocuments');
+  assert(src.includes('export async function uploadDocument'), 'must export uploadDocument');
+  assert(src.includes('export async function deleteDocument'), 'must export deleteDocument');
+  assert(src.includes('export async function reindexDocument'), 'must export reindexDocument');
+  assert(src.includes('export async function ragChat'), 'must export ragChat');
+  assert(src.includes('export async function getKnowledgeBaseStats'), 'must export getKnowledgeBaseStats');
+});
+
+test('KB-02: knowledge-base-actions.js has path traversal protection', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/knowledge-base-actions.js'), 'utf8');
+  assert(src.includes('Path traversal rejected'), 'deleteDocument must reject path traversal');
+  assert(src.includes('startsWith(docsDir)'), 'must check path is within docsDir');
+});
+
+test('KB-03: knowledge-base-page.jsx exports KnowledgeBasePage with all sub-components', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/components/knowledge-base-page.jsx'), 'utf8');
+  assert(src.includes('export function KnowledgeBasePage'), 'must export KnowledgeBasePage');
+  assert(src.includes('UploadZone'), 'must include UploadZone component');
+  assert(src.includes('DocumentTable'), 'must include DocumentTable component');
+  assert(src.includes('RagChatPanel'), 'must include RagChatPanel component');
+  assert(src.includes('StatsBar'), 'must include StatsBar component');
+});
+
+test('KB-04: RagChatPanel renders source citations with relevance scores', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/components/knowledge-base-page.jsx'), 'utf8');
+  assert(src.includes('msg.sources'), 'RagChatPanel must render source citations');
+  assert(src.includes('SOURCES'), 'must show SOURCES label for citations');
+  assert(src.includes('score'), 'must show relevance score for each source');
+});
+
+test('KB-05: UploadZone has drag-and-drop support and gigaclaw-docs reference', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/components/knowledge-base-page.jsx'), 'utf8');
+  assert(src.includes('onDrop'), 'UploadZone must handle drop events');
+  assert(src.includes('onDragOver'), 'UploadZone must handle dragover events');
+  assert(src.includes('gigaclaw-docs'), 'must mention gigaclaw-docs directory');
+});
+
+test('KB-06: knowledge-base Next.js route exists and renders KnowledgeBasePage', () => {
+  const routePath = path.join(ROOT, 'templates/app/knowledge-base/page.js');
+  assert(fs.existsSync(routePath), 'templates/app/knowledge-base/page.js must exist');
+  const src = fs.readFileSync(routePath, 'utf8');
+  assert(src.includes('KnowledgeBasePage'), 'route must render KnowledgeBasePage');
+  assert(src.includes('gigaclaw/auth'), 'route must import auth from gigaclaw/auth');
+});
+
+test('KB-07: app-sidebar.jsx has Knowledge Base nav entry with BookIcon', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/components/app-sidebar.jsx'), 'utf8');
+  assert(src.includes('/knowledge-base'), 'sidebar must link to /knowledge-base');
+  assert(src.includes('BookIcon'), 'sidebar must use BookIcon for Knowledge Base');
+  assert(src.includes('Knowledge Base'), 'sidebar must show Knowledge Base label');
+});
+
+test('KB-08: icons.jsx exports BookIcon', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/components/icons.jsx'), 'utf8');
+  assert(src.includes('export function BookIcon'), 'icons.jsx must export BookIcon');
+});
+
+test('KB-09: components/index.js exports KnowledgeBasePage', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib/chat/components/index.js'), 'utf8');
+  assert(src.includes('KnowledgeBasePage'), 'components/index.js must export KnowledgeBasePage');
+});
+
+test('KB-10: package.json exports ./knowledge-base/actions, ./rag, ./connectors', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  assert(pkg.exports['./knowledge-base/actions'], 'package.json must export ./knowledge-base/actions');
+  assert(pkg.exports['./rag'], 'package.json must export ./rag');
+  assert(pkg.exports['./connectors'], 'package.json must export ./connectors');
+});
+
 // ─── Run all tests and print final summary ───────────────────────────────────
 runAll().then(() => {
   const total = passed + failed + skipped;

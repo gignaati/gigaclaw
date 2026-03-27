@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BRAND_NAME } from '../../brand.js';
-import { CirclePlusIcon, PanelLeftIcon, MessageIcon, BellIcon, SwarmIcon, ArrowUpCircleIcon, LifeBuoyIcon, GitPullRequestIcon, ShieldIcon } from './icons.js';
+import { CirclePlusIcon, PanelLeftIcon, MessageIcon, BellIcon, SwarmIcon, ArrowUpCircleIcon, LifeBuoyIcon, GitPullRequestIcon, ShieldIcon, BookIcon } from './icons.js';
 import { getUnreadNotificationCount, getPullRequestCount, getAppVersion } from '../actions.js';
 import { SidebarHistory } from './sidebar-history.js';
 import { SidebarUserNav } from './sidebar-user-nav.js';
@@ -155,6 +155,24 @@ export function AppSidebar({ user }) {
               </TooltipTrigger>
               {collapsed && (
                 <TooltipContent side="right">Trust Ledger</TooltipContent>
+              )}
+            </Tooltip>
+          </SidebarMenuItem>
+
+          {/* Knowledge Base */}
+          <SidebarMenuItem>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <SidebarMenuButton
+                  href="/knowledge-base"
+                  className={collapsed ? 'justify-center' : ''}
+                >
+                  <BookIcon size={16} />
+                  {!collapsed && <span>Knowledge Base</span>}
+                </SidebarMenuButton>
+              </TooltipTrigger>
+              {collapsed && (
+                <TooltipContent side="right">Knowledge Base</TooltipContent>
               )}
             </Tooltip>
           </SidebarMenuItem>
