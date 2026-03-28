@@ -45,6 +45,8 @@ function getTemplateFiles(templatesDir) {
   function walk(dir) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
+      // Skip symlinks — they are recreated explicitly below (e.g. .claude/skills, .pi/skills)
+      if (entry.isSymbolicLink()) continue;
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
         walk(fullPath);

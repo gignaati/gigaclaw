@@ -1,6 +1,6 @@
 {
   "name": "gigaclaw",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "type": "module",
   "description": "GigaClaw — Gignaati's autonomous AI agent platform. Build, deploy, and run AI agents 24/7 with a two-layer architecture: Next.js Event Handler + Docker Agent. India-first, edge-native AI.",
   "bin": {

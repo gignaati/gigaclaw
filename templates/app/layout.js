@@ -1,6 +1,6 @@
 import './globals.css';
 import { ThemeProvider } from './components/theme-provider';
-import brandJson from '../../config/brand.json' assert { type: 'json' };
+import brandJson from '../config/brand.json' assert { type: 'json' };
 
 const brand = brandJson;
 

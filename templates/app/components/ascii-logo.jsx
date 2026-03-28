@@ -1,4 +1,4 @@
-import brand from '../../../config/brand.json' assert { type: 'json' };
+import brand from '../../config/brand.json' assert { type: 'json' };
 
 export function AsciiLogo() {
   return (

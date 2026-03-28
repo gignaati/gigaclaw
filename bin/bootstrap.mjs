@@ -180,7 +180,7 @@ function recommendOllamaModel(ramGb) {
 
 // ─── Section 2: Smart Defaults Setup (non-interactive) ───────────────────────
 
-async function runSmartSetup(cwd, envInfo) {
+async function runSmartSetup(cwd, envInfo, port = 3000) {
   const { randomBytes } = await import('crypto');
 
   const authSecret = randomBytes(32).toString('base64url');
@@ -209,7 +209,8 @@ async function runSmartSetup(cwd, envInfo) {
     HYBRID_ROUTING: 'auto',
 
     // Auth
-    NEXTAUTH_URL: 'http://localhost:3000',
+    NEXTAUTH_URL: `http://localhost:${port}`,
+    AUTH_URL: `http://localhost:${port}`,
     NEXTAUTH_SECRET: nextAuthSecret,
     AUTH_SECRET: authSecret,
     AUTH_TRUST_HOST: 'true',
@@ -264,12 +265,46 @@ function openBrowser(url) {
   }
 }
 
-async function startDevServer(cwd) {
-  const APP_URL = 'http://localhost:3000';
+async function findFreePort(preferred = 3000) {
+  const net = await import('net');
+  for (let port = preferred; port < preferred + 20; port++) {
+    const free = await new Promise((resolve) => {
+      const srv = net.default.createServer();
+      srv.once('error', () => resolve(false));
+      srv.once('listening', () => { srv.close(); resolve(true); });
+      srv.listen(port, '127.0.0.1');
+    });
+    if (free) return port;
+  }
+  return preferred; // fallback
+}
 
-  logStep('Launching Next.js dev server (turbopack)...');
+async function startDevServer(cwd, port) {
+  // port is pre-detected before setup so NEXTAUTH_URL matches
+  if (!port) port = await findFreePort(3000);
+  const APP_URL = `http://localhost:${port}`;
 
-  const child = spawn('npm', ['run', 'dev'], {
+  if (port !== 3000) {
+    logWarn(`Port 3000 is in use — using port ${port}`);
+  }
+
+  console.log(`
+  ┌─────────────────────────────────────────────────────────┐
+  │                                                         │
+  │   GigaClaw is starting...                               │
+  │                                                         │
+  │   App URL:  http://localhost:${port}${' '.repeat(Math.max(0, 22 - String(port).length))}│
+  │   Mode:     Hybrid (Cloud + Local)                      │
+  │                                                         │
+  │   Next step: add your ANTHROPIC_API_KEY to .env         │
+  │   or run:   npm run setup  for the full wizard          │
+  │                                                         │
+  └─────────────────────────────────────────────────────────┘
+`);
+
+  logStep(`Launching Next.js dev server (turbopack) on port ${port}...`);
+
+  const child = spawn('npm', ['run', 'dev', '--', '--port', String(port)], {
     cwd,
     shell: true,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -297,11 +332,12 @@ async function startDevServer(cwd) {
         if (line.trim()) process.stdout.write(`        ${line}\n`);
       }
 
-      // Detect "Local: http://localhost:3000" — server is ready
+      // Detect server ready signals
       if (!serverReady && (
-        text.includes('Local:') && text.includes('localhost:3000') ||
+        (text.includes('Local:') && text.includes(`localhost:${port}`)) ||
         text.includes('Ready in') ||
-        text.includes('✓ Ready')
+        text.includes('\u2713 Ready') ||
+        text.includes('started server on')
       )) {
         serverReady = true;
         clearTimeout(timeout);
@@ -409,6 +445,12 @@ export async function bootstrap() {
   log(PHASES.DEPS, 'Installing npm packages (retry-safe)...');
   await installDependencies(cwd);
 
+  // ── Detect port early so NEXTAUTH_URL is written correctly ────────────────
+  const devPort = await findFreePort(3000);
+  if (devPort !== 3000) {
+    logWarn(`Port 3000 is in use — will use port ${devPort} for the dev server`);
+  }
+
   // ── Phase 5+6: Setup + .env ──────────────────────────────────────────────
   if (interactive) {
     log(PHASES.SETUP, 'Launching interactive setup wizard...');
@@ -421,7 +463,7 @@ export async function bootstrap() {
     }
   } else {
     log(PHASES.SETUP, 'Applying smart defaults (hybrid mode, Claude Sonnet, auto routing)...');
-    const { localModel } = await runSmartSetup(cwd, envInfo);
+    const { localModel } = await runSmartSetup(cwd, envInfo, devPort);
 
     log(PHASES.ENV_W, 'Writing .env configuration...');
     logOk('GIGACLAW_MODE=hybrid');
@@ -431,22 +473,8 @@ export async function bootstrap() {
     logWarn('ANTHROPIC_API_KEY is empty — run: npm run setup  to add your API key');
   }
 
-  // ── Phase 7: Start dev server + open browser ─────────────────────────────
+  // ── Phase 7: Start dev server + open browser ─────────────────────────────────────────
   log(PHASES.START, 'Starting Next.js dev server...');
 
-  console.log(`
-  ┌─────────────────────────────────────────────────────────┐
-  │                                                         │
-  │   GigaClaw is starting...                               │
-  │                                                         │
-  │   App URL:  http://localhost:3000                       │
-  │   Mode:     Hybrid (Cloud + Local)                      │
-  │                                                         │
-  │   Next step: add your ANTHROPIC_API_KEY to .env         │
-  │   or run:   npm run setup  for the full wizard          │
-  │                                                         │
-  └─────────────────────────────────────────────────────────┘
-`);
-
-  await startDevServer(cwd);
+  await startDevServer(cwd, devPort);
 }
