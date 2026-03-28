@@ -771,7 +771,8 @@ test('v1.7 lib/brand.js exports brand accessor and imports brand.json', () => {
 test('v1.7 package.json exports ./brand module', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   assert(pkg.exports['./brand'], 'package.json must export ./brand');
-  assert(pkg.version === '1.8.1', `package.json version must be 1.8.1, got ${pkg.version}`);
+  // Version check relaxed — version advances with each release
+  assert(pkg.version, `package.json must have a version`);
 });
 
 // ─── v1.7.0: RAG Engine ──────────────────────────────────────────────────────
@@ -1082,13 +1083,15 @@ test('v1.9.0: bin/bootstrap.mjs auto-starts dev server and opens browser', () =>
   assert(src.includes('openBrowser'), 'bootstrap must have openBrowser()');
   assert(src.includes('xdg-open') || src.includes('open http'), 'bootstrap must handle Linux browser open');
   assert(src.includes('start http') || src.includes('win32'), 'bootstrap must handle Windows browser open');
-  assert(src.includes('localhost:3000'), 'bootstrap must target localhost:3000');
+  // v1.9.2: port is dynamic (findFreePort), so localhost:3000 may not appear literally
+  assert(src.includes('localhost:') || src.includes('localhost:${'), 'bootstrap must target localhost with dynamic port');
 });
 
 test('v1.9.0: bin/bootstrap.mjs detects server ready via log pattern', () => {
   const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
-  assert(src.includes('Local:') && src.includes('localhost:3000'), 'bootstrap must detect server ready via log');
-  assert(src.includes('Ready in') || src.includes('✓ Ready'), 'bootstrap must detect turbopack ready signal');
+  assert(src.includes('Local:'), 'bootstrap must detect server ready via Local: log pattern');
+  // v1.9.2: turbopack removed, detect standard Next.js ready signal or health check
+  assert(src.includes('Ready in') || src.includes('✓ Ready') || src.includes('/api/health'), 'bootstrap must detect server ready signal');
 });
 
 test('v1.9.0: bin/cli.js installDependenciesWithRetry uses --no-audit --no-fund --prefer-online', () => {
@@ -1112,6 +1115,102 @@ test('v1.9.0: bin/bootstrap.mjs has structured phase logger (PHASES object)', ()
   assert(src.includes('logOk'), 'bootstrap must have logOk helper');
   assert(src.includes('logWarn'), 'bootstrap must have logWarn helper');
   assert(src.includes('logStep'), 'bootstrap must have logStep helper');
+});
+
+// ─── v1.9.2: Stabilization Release ──────────────────────────────────────────
+
+test('v1.9.2: bin/doctor.mjs exists and passes syntax check', () => {
+  const doctorPath = path.join(ROOT, 'bin', 'doctor.mjs');
+  assert(fs.existsSync(doctorPath), 'bin/doctor.mjs must exist');
+  execSync(`node --check ${doctorPath}`);
+});
+
+test('v1.9.2: bin/doctor.mjs exports doctor function', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'doctor.mjs'), 'utf8');
+  assert(src.includes('export async function doctor'), 'doctor.mjs must export async doctor()');
+  assert(src.includes('Node.js'), 'doctor must check Node.js');
+  assert(src.includes('Docker'), 'doctor must check Docker');
+  assert(src.includes('Ollama'), 'doctor must check Ollama');
+  assert(src.includes('.env'), 'doctor must check .env');
+});
+
+test('v1.9.2: bin/cli.js has doctor, reset-build, and --clean-install commands', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'cli.js'), 'utf8');
+  assert(src.includes("case 'doctor'"), 'cli.js must route doctor command');
+  assert(src.includes("case 'reset-build'"), 'cli.js must route reset-build command');
+  assert(src.includes("case '--clean-install'"), 'cli.js must route --clean-install command');
+});
+
+test('v1.9.2: scaffold.mjs dev script does NOT use --turbopack', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'scaffold.mjs'), 'utf8');
+  assert(!src.includes('--turbopack'), 'scaffold.mjs must NOT use --turbopack in dev script');
+  assert(src.includes('next dev'), 'scaffold.mjs must use next dev');
+});
+
+test('v1.9.2: bootstrap.mjs auto-generates JWT_SECRET and NEXTAUTH_SECRET', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('JWT_SECRET'), 'bootstrap must generate JWT_SECRET');
+  assert(src.includes('NEXTAUTH_SECRET'), 'bootstrap must generate NEXTAUTH_SECRET');
+  assert(src.includes('AUTH_SECRET'), 'bootstrap must generate AUTH_SECRET');
+  assert(src.includes('randomBytes') || src.includes('crypto'), 'bootstrap must use crypto for secret generation');
+});
+
+test('v1.9.2: bootstrap.mjs sets ENABLE_CRON=false by default', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('ENABLE_CRON=false'), 'bootstrap must set ENABLE_CRON=false');
+});
+
+test('v1.9.2: bootstrap.mjs sets GIGACLAW_MODE env var', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('GIGACLAW_MODE'), 'bootstrap must set GIGACLAW_MODE');
+  assert(src.includes('hybrid') || src.includes('local') || src.includes('cloud'), 'bootstrap must detect mode');
+});
+
+test('v1.9.2: bootstrap.mjs cleans .next before dev server start', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('.next') && src.includes('rmSync'), 'bootstrap must clean .next directory');
+});
+
+test('v1.9.2: bootstrap.mjs has health check after server start', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('/api/health'), 'bootstrap must call /api/health endpoint');
+  assert(src.includes('HEALTH') || src.includes('health'), 'bootstrap must have health check phase');
+});
+
+test('v1.9.2: lib/api/health.js exists and exports handler', () => {
+  const healthPath = path.join(ROOT, 'lib', 'api', 'health.js');
+  assert(fs.existsSync(healthPath), 'lib/api/health.js must exist');
+  const src = fs.readFileSync(healthPath, 'utf8');
+  assert(src.includes('export'), 'health.js must export handler');
+  assert(src.includes('auth') || src.includes('AUTH'), 'health.js must check auth');
+  assert(src.includes('llm') || src.includes('provider'), 'health.js must check LLM');
+});
+
+test('v1.9.2: api/index.js has /health and /debug routes', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'api', 'index.js'), 'utf8');
+  assert(src.includes('/health'), 'api/index.js must route /health');
+  assert(src.includes('/debug'), 'api/index.js must route /debug');
+});
+
+test('v1.9.2: instrumentation.js gates cron on ENABLE_CRON env', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'config', 'instrumentation.js'), 'utf8');
+  assert(src.includes('ENABLE_CRON'), 'instrumentation.js must check ENABLE_CRON');
+});
+
+test('v1.9.2: model.js handles missing API key gracefully in local mode', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'lib', 'ai', 'model.js'), 'utf8');
+  assert(src.includes('GIGACLAW_MODE'), 'model.js must check GIGACLAW_MODE');
+  assert(src.includes('falling back to Ollama') || src.includes('fallback'), 'model.js must fall back to Ollama in local mode');
+});
+
+test('v1.9.2: bootstrap.mjs handles workspace isolation (existing dir)', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('existsSync') && src.includes('gigaclaw-app'), 'bootstrap must check for existing gigaclaw-app dir');
+});
+
+test('v1.9.2: bootstrap.mjs supports --clean-install via env var', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'bin', 'bootstrap.mjs'), 'utf8');
+  assert(src.includes('GIGACLAW_CLEAN_INSTALL'), 'bootstrap must check GIGACLAW_CLEAN_INSTALL env');
 });
 
 // ─── Run all tests and print final summary ───────────────────────────────────

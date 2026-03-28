@@ -99,7 +99,10 @@ Manual commands:
   set-agent-secret <KEY> [VALUE]    Set a GitHub secret with AGENT_ prefix (also updates .env)
   set-agent-llm-secret <KEY> [VALUE]  Set a GitHub secret with AGENT_LLM_ prefix
   set-var <KEY> [VALUE]             Set a GitHub repository variable
-   --version, -v                     Show gigaclaw version
+  doctor                            Validate environment (Node, Docker, Ollama, ports, .env)
+  reset-build                       Clean .next cache, node_modules, and rebuild
+  --clean-install                   Bootstrap with fresh npm install (delete node_modules first)
+  --version, -v                     Show gigaclaw version
 
 Powered by Gignaati — https://www.gignaati.com
 `);
@@ -887,6 +890,38 @@ switch (command) {
   case 'set-var':
     await setVar(args[0], args[1]);
     break;
+  case 'doctor': {
+    const { doctor } = await import('./doctor.mjs');
+    await doctor();
+    break;
+  }
+  case 'reset-build': {
+    console.log('Cleaning build artifacts...');
+    const cwd = process.cwd();
+    const nextDir = path.join(cwd, '.next');
+    if (fs.existsSync(nextDir)) {
+      fs.rmSync(nextDir, { recursive: true, force: true });
+      console.log('  Removed .next/');
+    }
+    const nmDir = path.join(cwd, 'node_modules');
+    if (fs.existsSync(nmDir)) {
+      fs.rmSync(nmDir, { recursive: true, force: true });
+      console.log('  Removed node_modules/');
+    }
+    const lockFile = path.join(cwd, 'package-lock.json');
+    if (fs.existsSync(lockFile)) {
+      fs.unlinkSync(lockFile);
+      console.log('  Removed package-lock.json');
+    }
+    console.log('Clean complete. Run: npm install && npm run dev');
+    break;
+  }
+  case '--clean-install': {
+    process.env.GIGACLAW_CLEAN_INSTALL = 'true';
+    const { bootstrap } = await import('./bootstrap.mjs');
+    await bootstrap();
+    break;
+  }
   default:
     printUsage();
     process.exit(1);

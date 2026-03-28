@@ -31,13 +31,14 @@ const PACKAGE_DIR = path.join(__dirname, '..');
 // Replaces verbose npm/node output with clean phase-aware status lines.
 
 const PHASES = {
-  ENV:    '[ 1/7 ] Detecting environment',
-  DIR:    '[ 2/7 ] Creating project directory',
-  SCAF:   '[ 3/7 ] Scaffolding project files',
-  DEPS:   '[ 4/7 ] Installing dependencies',
-  SETUP:  '[ 5/7 ] Configuring GigaClaw',
-  ENV_W:  '[ 6/7 ] Writing .env',
-  START:  '[ 7/7 ] Starting dev server',
+  ENV:    '[ 1/8 ] Detecting environment',
+  DIR:    '[ 2/8 ] Creating project directory',
+  SCAF:   '[ 3/8 ] Scaffolding project files',
+  DEPS:   '[ 4/8 ] Installing dependencies',
+  SETUP:  '[ 5/8 ] Configuring GigaClaw',
+  ENV_W:  '[ 6/8 ] Writing .env',
+  START:  '[ 7/8 ] Starting dev server',
+  HEALTH: '[ 8/8 ] Validating system health',
 };
 
 function log(phase, msg) {
@@ -81,6 +82,14 @@ function printBanner() {
 const SLEEP = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function installDependencies(cwd) {
+  // Support --clean-install: delete node_modules and lockfile before install
+  if (process.env.GIGACLAW_CLEAN_INSTALL === 'true') {
+    logStep('Clean install requested — removing node_modules and lockfile...');
+    const nm = path.join(cwd, 'node_modules');
+    const lf = path.join(cwd, 'package-lock.json');
+    if (fs.existsSync(nm)) fs.rmSync(nm, { recursive: true, force: true });
+    if (fs.existsSync(lf)) fs.unlinkSync(lf);
+  }
   const MAX_ATTEMPTS = 3;
   const BACKOFF = [2000, 5000, 10000]; // exponential: 2s, 5s, 10s
 
@@ -185,35 +194,68 @@ async function runSmartSetup(cwd, envInfo, port = 3000) {
 
   const authSecret = randomBytes(32).toString('base64url');
   const nextAuthSecret = randomBytes(32).toString('base64url');
+  const jwtSecret = randomBytes(32).toString('base64url');
 
   const localModel = envInfo.ollamaModels.length > 0
     ? envInfo.ollamaModels[0]
     : recommendOllamaModel(envInfo.ramGb);
 
-  const envVars = {
-    // Mode
-    GIGACLAW_MODE: 'hybrid',
+  // Determine operating mode based on available infrastructure
+  // If an existing .env has ANTHROPIC_API_KEY, preserve hybrid mode
+  const existingEnv = fs.existsSync(path.join(cwd, '.env'))
+    ? fs.readFileSync(path.join(cwd, '.env'), 'utf-8')
+    : '';
+  const hasApiKey = /^ANTHROPIC_API_KEY=.+$/m.test(existingEnv)
+    || /^OPENAI_API_KEY=.+$/m.test(existingEnv)
+    || /^GOOGLE_API_KEY=.+$/m.test(existingEnv);
+  const hasOllama = envInfo.ollama;
 
-    // Cloud: default to Claude Sonnet (user can change via npm run setup)
-    LLM_PROVIDER: 'anthropic',
-    LLM_MODEL: 'claude-sonnet-4-6',
-    // Note: ANTHROPIC_API_KEY intentionally left blank — user must provide it
-    ANTHROPIC_API_KEY: '',
+  let mode, llmProvider, llmModel;
+  if (hasApiKey) {
+    // User has a cloud API key — use hybrid mode
+    mode = 'hybrid';
+    llmProvider = 'anthropic';
+    llmModel = 'claude-sonnet-4-6';
+  } else if (hasOllama) {
+    // No cloud key but Ollama is running — local-only mode
+    mode = 'local';
+    llmProvider = 'ollama';
+    llmModel = localModel;
+  } else {
+    // No cloud key, no Ollama — local mode with placeholder (UI will still load)
+    mode = 'local';
+    llmProvider = 'ollama';
+    llmModel = localModel;
+  }
+
+  const envVars = {
+    // Mode — auto-detected based on available infrastructure
+    GIGACLAW_MODE: mode,
+
+    // Primary LLM
+    LLM_PROVIDER: llmProvider,
+    LLM_MODEL: llmModel,
+    // Cloud API key — only set if not already present
+    ...(hasApiKey ? {} : { ANTHROPIC_API_KEY: '' }),
 
     // Local: Ollama if running, else blank
-    LOCAL_LLM_PROVIDER: envInfo.ollama ? 'ollama' : '',
-    LOCAL_LLM_MODEL: envInfo.ollama ? localModel : '',
+    LOCAL_LLM_PROVIDER: hasOllama ? 'ollama' : '',
+    LOCAL_LLM_MODEL: hasOllama ? localModel : '',
     OLLAMA_BASE_URL: 'http://localhost:11434',
 
     // Routing
-    HYBRID_ROUTING: 'auto',
+    HYBRID_ROUTING: mode === 'hybrid' ? 'auto' : 'local',
 
-    // Auth
+    // Auth & JWT
     NEXTAUTH_URL: `http://localhost:${port}`,
     AUTH_URL: `http://localhost:${port}`,
     NEXTAUTH_SECRET: nextAuthSecret,
     AUTH_SECRET: authSecret,
+    JWT_SECRET: jwtSecret,
     AUTH_TRUST_HOST: 'true',
+
+    // Cron control — disabled until health check passes
+    ENABLE_CRON: 'false',
 
     // Version
     GIGACLAW_VERSION: JSON.parse(
@@ -288,21 +330,37 @@ async function startDevServer(cwd, port) {
     logWarn(`Port 3000 is in use — using port ${port}`);
   }
 
+  // Read mode from .env for the info box
+  let displayMode = 'Local';
+  try {
+    const envContent = fs.readFileSync(path.join(cwd, '.env'), 'utf-8');
+    const modeMatch = envContent.match(/^GIGACLAW_MODE=(.*)$/m);
+    if (modeMatch && modeMatch[1].trim() === 'hybrid') displayMode = 'Hybrid (Cloud + Local)';
+    else if (modeMatch && modeMatch[1].trim() === 'local') displayMode = 'Local (On-Device)';
+  } catch (_) {}
+
+  const modeStr = `Mode:     ${displayMode}`;
   console.log(`
   ┌─────────────────────────────────────────────────────────┐
   │                                                         │
   │   GigaClaw is starting...                               │
   │                                                         │
   │   App URL:  http://localhost:${port}${' '.repeat(Math.max(0, 22 - String(port).length))}│
-  │   Mode:     Hybrid (Cloud + Local)                      │
+  │   ${modeStr}${' '.repeat(Math.max(0, 52 - modeStr.length))}│
   │                                                         │
-  │   Next step: add your ANTHROPIC_API_KEY to .env         │
-  │   or run:   npm run setup  for the full wizard          │
+  │   Run: npm run setup  for the full wizard               │
   │                                                         │
   └─────────────────────────────────────────────────────────┘
 `);
 
-  logStep(`Launching Next.js dev server (turbopack) on port ${port}...`);
+  // Clean stale .next build cache to avoid chunk load errors
+  const nextDir = path.join(cwd, '.next');
+  if (fs.existsSync(nextDir)) {
+    logStep('Removing stale .next build cache...');
+    fs.rmSync(nextDir, { recursive: true, force: true });
+  }
+
+  logStep(`Launching Next.js dev server on port ${port}...`);
 
   const child = spawn('npm', ['run', 'dev', '--', '--port', String(port)], {
     cwd,
@@ -416,8 +474,24 @@ export async function bootstrap() {
     }
 
     if (!isExistingProject) {
-      const dirName = 'gigaclaw-app';
-      const newDir = path.resolve(cwd, dirName);
+      let dirName = 'gigaclaw-app';
+      let newDir = path.resolve(cwd, dirName);
+      // If gigaclaw-app already exists and is not a gigaclaw project, use a unique suffix
+      if (fs.existsSync(newDir)) {
+        const existingPkg = path.join(newDir, 'package.json');
+        let isGigaclawDir = false;
+        if (fs.existsSync(existingPkg)) {
+          try {
+            const p = JSON.parse(fs.readFileSync(existingPkg, 'utf8'));
+            if (p.dependencies?.gigaclaw || p.devDependencies?.gigaclaw) isGigaclawDir = true;
+          } catch (_) {}
+        }
+        if (!isGigaclawDir) {
+          const suffix = Date.now().toString(36).slice(-4);
+          dirName = `gigaclaw-app-${suffix}`;
+          newDir = path.resolve(cwd, dirName);
+        }
+      }
       fs.mkdirSync(newDir, { recursive: true });
       process.chdir(newDir);
       cwd = newDir;
@@ -462,19 +536,91 @@ export async function bootstrap() {
       process.exit(1);
     }
   } else {
-    log(PHASES.SETUP, 'Applying smart defaults (hybrid mode, Claude Sonnet, auto routing)...');
-    const { localModel } = await runSmartSetup(cwd, envInfo, devPort);
+    log(PHASES.SETUP, 'Applying smart defaults (auto-detecting mode)...');
+    const { localModel, envVars: setupVars } = await runSmartSetup(cwd, envInfo, devPort);
 
     log(PHASES.ENV_W, 'Writing .env configuration...');
-    logOk('GIGACLAW_MODE=hybrid');
-    logOk('LLM_PROVIDER=anthropic | LLM_MODEL=claude-sonnet-4-6');
-    logOk(`LOCAL_LLM_PROVIDER=${envInfo.ollama ? 'ollama' : '(not configured)'} | LOCAL_LLM_MODEL=${envInfo.ollama ? localModel : '(not configured)'}`);
-    logOk('HYBRID_ROUTING=auto');
-    logWarn('ANTHROPIC_API_KEY is empty — run: npm run setup  to add your API key');
+    logOk(`GIGACLAW_MODE=${setupVars.GIGACLAW_MODE}`);
+    logOk(`LLM_PROVIDER=${setupVars.LLM_PROVIDER} | LLM_MODEL=${setupVars.LLM_MODEL}`);
+    if (setupVars.LOCAL_LLM_PROVIDER) {
+      logOk(`LOCAL_LLM_PROVIDER=${setupVars.LOCAL_LLM_PROVIDER} | LOCAL_LLM_MODEL=${setupVars.LOCAL_LLM_MODEL}`);
+    }
+    logOk(`HYBRID_ROUTING=${setupVars.HYBRID_ROUTING}`);
+    if (setupVars.GIGACLAW_MODE === 'local' && !envInfo.ollama) {
+      logWarn('No API key and no Ollama detected — UI will load but AI chat requires a provider');
+      logStep('To enable AI: install Ollama (https://ollama.com) or add ANTHROPIC_API_KEY to .env');
+    } else if (setupVars.GIGACLAW_MODE === 'local') {
+      logOk('Running in local-only mode — all data stays on your machine');
+    } else if (!setupVars.ANTHROPIC_API_KEY && setupVars.GIGACLAW_MODE === 'hybrid') {
+      logWarn('ANTHROPIC_API_KEY is empty — run: npm run setup  to add your API key');
+    }
   }
 
   // ── Phase 7: Start dev server + open browser ─────────────────────────────────────────
   log(PHASES.START, 'Starting Next.js dev server...');
 
-  await startDevServer(cwd, devPort);
+  const serverChild = await startDevServer(cwd, devPort);
+
+  // ── Phase 8: Health validation ─────────────────────────────────────────────
+  log(PHASES.HEALTH, 'Validating system health...');
+  const healthUrl = `http://localhost:${devPort}/api/health`;
+  let healthPassed = false;
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      await SLEEP(3000); // Give Next.js time to compile the route
+      const res = await fetch(healthUrl, { signal: AbortSignal.timeout(10000) });
+      if (res.ok) {
+        const data = await res.json();
+        healthPassed = data.status !== 'unhealthy';
+        if (healthPassed) {
+          logOk(`Health check passed — status: ${data.status}`);
+          // Print subsystem summary
+          for (const [name, check] of Object.entries(data.checks || {})) {
+            const icon = check.status === 'ok' ? '✓' : check.status === 'warn' ? '⚠' : '✗';
+            logStep(`${icon} ${name}: ${check.message}`);
+          }
+          // Enable cron now that system is healthy
+          try {
+            const envPath = path.join(cwd, '.env');
+            let envContent = fs.readFileSync(envPath, 'utf-8');
+            envContent = envContent.replace(/^ENABLE_CRON=false$/m, 'ENABLE_CRON=true');
+            fs.writeFileSync(envPath, envContent);
+            logOk('Cron scheduler enabled (ENABLE_CRON=true)');
+          } catch (_) {}
+          break;
+        } else {
+          logWarn(`Health check returned: ${data.status} (attempt ${attempt}/5)`);
+        }
+      } else {
+        logWarn(`Health check returned HTTP ${res.status} (attempt ${attempt}/5)`);
+      }
+    } catch (err) {
+      if (attempt < 5) {
+        logStep(`Health check attempt ${attempt}/5 — server still compiling...`);
+      } else {
+        logWarn(`Health check failed after 5 attempts: ${err.message}`);
+      }
+    }
+  }
+
+  if (!healthPassed) {
+    logWarn('Health check did not pass — system may be degraded.');
+    logStep('Run: curl http://localhost:' + devPort + '/api/health  to diagnose');
+    logStep('Run: curl http://localhost:' + devPort + '/api/debug   for full diagnostics');
+  }
+
+  // Final summary
+  console.log(`
+  ┌─────────────────────────────────────────────────────────┐
+  │                                                         │
+  │   ✓ GigaClaw is ready!                                  │
+  │                                                         │
+  │   App:     http://localhost:${devPort}${' '.repeat(Math.max(0, 22 - String(devPort).length))}│
+  │   Health:  http://localhost:${devPort}/api/health${' '.repeat(Math.max(0, 11 - String(devPort).length))}│
+  │   Debug:   http://localhost:${devPort}/api/debug${' '.repeat(Math.max(0, 12 - String(devPort).length))}│
+  │                                                         │
+  │   Press Ctrl+C to stop the server                       │
+  │                                                         │
+  └─────────────────────────────────────────────────────────┘
+`);
 }

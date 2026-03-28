@@ -31,7 +31,7 @@ function getFireTriggers() {
 }
 
 // Routes that have their own authentication
-const PUBLIC_ROUTES = ['/telegram/webhook', '/github/webhook', '/ping'];
+const PUBLIC_ROUTES = ['/telegram/webhook', '/github/webhook', '/ping', '/health', '/debug'];
 
 /**
  * Timing-safe string comparison.
@@ -270,6 +270,36 @@ async function GET(request) {
 
   switch (routePath) {
     case '/ping':           return Response.json({ message: 'Pong!' });
+    case '/health': {
+      const { handleHealthCheck } = await import('../lib/api/health.js');
+      const result = await handleHealthCheck();
+      const status = result.status === 'unhealthy' ? 503 : 200;
+      return Response.json(result, { status });
+    }
+    case '/debug': {
+      const { handleHealthCheck } = await import('../lib/api/health.js');
+      const health = await handleHealthCheck();
+      return Response.json({
+        ...health,
+        env: {
+          NODE_ENV: process.env.NODE_ENV,
+          GIGACLAW_MODE: process.env.GIGACLAW_MODE,
+          LLM_PROVIDER: process.env.LLM_PROVIDER,
+          LLM_MODEL: process.env.LLM_MODEL,
+          LOCAL_LLM_PROVIDER: process.env.LOCAL_LLM_PROVIDER,
+          HYBRID_ROUTING: process.env.HYBRID_ROUTING,
+          ENABLE_CRON: process.env.ENABLE_CRON,
+          AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST,
+          // Never expose secrets — just show if they are set
+          AUTH_SECRET: process.env.AUTH_SECRET ? '[set]' : '[missing]',
+          NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ? '[set]' : '[missing]',
+          JWT_SECRET: process.env.JWT_SECRET ? '[set]' : '[missing]',
+          ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ? '[set]' : '[missing]',
+        },
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+      });
+    }
     case '/jobs/status':    return handleJobStatus(request);
     default:                return Response.json({ error: 'Not found' }, { status: 404 });
   }

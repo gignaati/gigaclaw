@@ -129,7 +129,7 @@ export async function scaffoldProject(cwd, packageDir, { noManaged = false, sile
       name: dirName,
       private: true,
       scripts: {
-        dev: 'next dev --turbopack',
+        dev: 'next dev',
         build: 'next build',
         start: 'next start',
         setup: 'gigaclaw setup',

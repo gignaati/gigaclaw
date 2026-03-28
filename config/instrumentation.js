@@ -30,7 +30,7 @@ export async function register() {
     process.env.AUTH_URL = process.env.APP_URL;
   }
 
-  // Validate AUTH_SECRET is set (required by Auth.js for session encryption)
+  // Validate auth secrets (required by Auth.js for session encryption and JWT signing)
   if (!process.env.AUTH_SECRET) {
     console.error('\n  ERROR: AUTH_SECRET is not set in your .env file.');
     console.error('  This is required for session encryption.');
@@ -38,25 +38,39 @@ export async function register() {
     console.error('  openssl rand -base64 32\n');
     throw new Error('AUTH_SECRET environment variable is required');
   }
+  if (!process.env.NEXTAUTH_SECRET) {
+    // Fall back to AUTH_SECRET if NEXTAUTH_SECRET is not set
+    process.env.NEXTAUTH_SECRET = process.env.AUTH_SECRET;
+    console.warn('  WARN: NEXTAUTH_SECRET not set — using AUTH_SECRET as fallback.');
+  }
 
   // Initialize auth database
   const { initDatabase } = await import('../lib/db/index.js');
   initDatabase();
 
-  // Start cron scheduler
-  const { loadCrons } = await import('../lib/cron.js');
-  loadCrons();
+  // Start cron scheduler — gated on ENABLE_CRON env var (default: false)
+  // Bootstrap sets ENABLE_CRON=false initially, then enables after health check passes.
+  if (process.env.ENABLE_CRON === 'true') {
+    const { loadCrons } = await import('../lib/cron.js');
+    loadCrons();
+    const { startBuiltinCrons, setUpdateAvailable } = await import('../lib/cron.js');
+    startBuiltinCrons();
+    // Warm in-memory flag from DB
+    try {
+      const { getAvailableVersion } = await import('../lib/db/update-check.js');
+      const stored = getAvailableVersion();
+      if (stored) setUpdateAvailable(stored);
+    } catch {}
+    console.log('  Cron scheduler started (ENABLE_CRON=true)');
+  } else {
+    console.log('  Cron scheduler disabled (ENABLE_CRON != true)');
+  }
 
-  // Start built-in crons (version check)
-  const { startBuiltinCrons, setUpdateAvailable } = await import('../lib/cron.js');
-  startBuiltinCrons();
-
-  // Warm in-memory flag from DB (covers the window before the async cron fetch completes)
-  try {
-    const { getAvailableVersion } = await import('../lib/db/update-check.js');
-    const stored = getAvailableVersion();
-    if (stored) setUpdateAvailable(stored);
-  } catch {}
+  // Auto-detect mode and log it
+  const mode = process.env.GIGACLAW_MODE || 'hybrid';
+  const provider = process.env.LLM_PROVIDER || 'anthropic';
+  const model = process.env.LLM_MODEL || 'unknown';
+  console.log(`  Mode: ${mode} | Provider: ${provider} | Model: ${model}`);
 
   console.log('gigaclaw initialized');
 }
